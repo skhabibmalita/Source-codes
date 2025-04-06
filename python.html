@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Snake Game 🐍</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      background-color: #111;
+      overflow: hidden;
+      touch-action: none;
+    }
+    canvas {
+      display: block;
+      margin: 0 auto;
+      background-color: #111;
+    }
+  </style>
+</head>
+<body class="text-white flex flex-col items-center justify-center min-h-screen">
+
+  <h1 class="text-3xl md:text-4xl font-bold mb-4">Snake Game 🐍</h1>
+
+  <canvas id="gameCanvas" class="border-4 border-green-500 rounded-lg shadow-lg"></canvas>
+
+  <div class="mt-4 text-lg flex gap-10">
+    <div>Score: <span id="score" class="text-green-400">0</span></div>
+    <div>High Score: <span id="highScore" class="text-yellow-400">0</span></div>
+  </div>
+
+  <div class="mt-6 text-sm text-gray-400 text-center">
+    <p>Use Arrow Keys / Touch to control</p>
+    <p>Press <strong>Enter</strong> to restart after Game Over</p>
+  </div>
+
+  <div id="gameOver" class="absolute inset-0 bg-black bg-opacity-80 hidden flex-col items-center justify-center">
+    <h2 class="text-3xl font-bold text-red-500 mb-2">Game Over</h2>
+    <p id="finalScore" class="text-xl mb-4"></p>
+    <button id="restartBtn" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-full">
+      Restart
+    </button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const blockSize = 20;
+    const widthInBlocks = 25;
+    const heightInBlocks = 20;
+
+    canvas.width = blockSize * widthInBlocks;
+    canvas.height = blockSize * heightInBlocks;
+
+    let snake, food, direction, score, highScore, gameInterval;
+
+    const foodTypes = [
+      { name: 'apple', color: '#f44336', points: 10 },
+      { name: 'banana', color: '#fbc02d', points: 15 },
+      { name: 'orange', color: '#fb8c00', points: 20 }
+    ];
+
+    function initGame() {
+      snake = [
+        { x: 10, y: 10 },
+        { x: 9, y: 10 },
+        { x: 8, y: 10 }
+      ];
+      direction = 'right';
+      score = 0;
+      document.getElementById("score").textContent = score;
+      highScore = localStorage.getItem("snakeHighScore") || 0;
+      document.getElementById("highScore").textContent = highScore;
+      document.getElementById("gameOver").classList.add("hidden");
+      placeFood();
+      clearInterval(gameInterval);
+      gameInterval = setInterval(gameLoop, 100);
+    }
+
+    function placeFood() {
+      const type = foodTypes[Math.floor(Math.random() * foodTypes.length)];
+      let x, y;
+      do {
+        x = Math.floor(Math.random() * widthInBlocks);
+        y = Math.floor(Math.random() * heightInBlocks);
+      } while (snake.some(seg => seg.x === x && seg.y === y));
+      food = { x, y, type };
+    }
+
+    function draw() {
+      ctx.fillStyle = "#111";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw food
+      ctx.fillStyle = food.type.color;
+      ctx.beginPath();
+      ctx.arc(
+        food.x * blockSize + blockSize / 2,
+        food.y * blockSize + blockSize / 2,
+        blockSize / 2 - 2,
+        0,
+        Math.PI * 2
+      );
+      ctx.fill();
+
+      // Draw snake
+      snake.forEach((segment, index) => {
+        ctx.fillStyle = index === 0 ? "#00ff00" : "#00cc00";
+        ctx.fillRect(segment.x * blockSize, segment.y * blockSize, blockSize, blockSize);
+      });
+    }
+
+    function update() {
+      const head = { ...snake[0] };
+      if (direction === 'right') head.x++;
+      else if (direction === 'left') head.x--;
+      else if (direction === 'up') head.y--;
+      else if (direction === 'down') head.y++;
+
+      if (
+        head.x < 0 || head.x >= widthInBlocks ||
+        head.y < 0 || head.y >= heightInBlocks ||
+        snake.some(seg => seg.x === head.x && seg.y === head.y)
+      ) {
+        gameOver();
+        return;
+      }
+
+      snake.unshift(head);
+
+      if (head.x === food.x && head.y === food.y) {
+        score += food.type.points;
+        document.getElementById("score").textContent = score;
+        if (score > highScore) {
+          highScore = score;
+          localStorage.setItem("snakeHighScore", highScore);
+          document.getElementById("highScore").textContent = highScore;
+        }
+        placeFood();
+      } else {
+        snake.pop();
+      }
+    }
+
+    function gameLoop() {
+      update();
+      draw();
+    }
+
+    function gameOver() {
+      clearInterval(gameInterval);
+      document.getElementById("finalScore").textContent = `Your Score: ${score}`;
+      document.getElementById("gameOver").classList.remove("hidden");
+    }
+
+    // Keyboard control
+    document.addEventListener("keydown", e => {
+      switch (e.key) {
+        case "ArrowUp":
+          if (direction !== "down") direction = "up";
+          break;
+        case "ArrowDown":
+          if (direction !== "up") direction = "down";
+          break;
+        case "ArrowLeft":
+          if (direction !== "right") direction = "left";
+          break;
+        case "ArrowRight":
+          if (direction !== "left") direction = "right";
+          break;
+        case "Enter":
+          if (document.getElementById("gameOver").classList.contains("hidden") === false) {
+            initGame();
+          }
+          break;
+      }
+    });
+
+    document.getElementById("restartBtn").addEventListener("click", initGame);
+
+    // Touch swipe
+    let touchStartX = 0, touchStartY = 0;
+    canvas.addEventListener("touchstart", e => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    });
+
+    canvas.addEventListener("touchend", e => {
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      const dy = e.changedTouches[0].clientY - touchStartY;
+      if (Math.abs(dx) > Math.abs(dy)) {
+        if (dx > 0 && direction !== "left") direction = "right";
+        else if (dx < 0 && direction !== "right") direction = "left";
+      } else {
+        if (dy > 0 && direction !== "up") direction = "down";
+        else if (dy < 0 && direction !== "down") direction = "up";
+      }
+    });
+
+    initGame();
+  </script>
+</body>
+</html>
