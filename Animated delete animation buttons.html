@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Delete Button by snappy_codes.08</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
+    <style>
+        /* Force dark background across browsers */
+        html, body {
+            background-color: #121212 !important;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #f8f8f8;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 3rem auto;
+            padding: 2rem;
+            background-color: #1e1e1e;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .card-item {
+            position: relative;
+            background: linear-gradient(135deg, #292929 0%, #1a1a1a 100%);
+            margin-bottom: 1.5rem;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-origin: center;
+        }
+        
+        .card-item:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        }
+        
+        .card-content {
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #e0e0e0;
+        }
+        
+        .delete-btn {
+            background: linear-gradient(135deg, #ff4d4d 0%, #f9004d 100%);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            outline: none;
+            box-shadow: 0 4px 15px rgba(249, 0, 77, 0.4);
+            min-width: 100px;
+            text-align: center;
+        }
+        
+        .delete-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 7px 20px rgba(249, 0, 77, 0.5);
+        }
+        
+        .delete-btn:active {
+            transform: translateY(1px) scale(0.98);
+        }
+        
+        .delete-btn.confirm {
+            background: linear-gradient(135deg, #ffcc00 0%, #ff9900 100%);
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+            box-shadow: 0 4px 15px rgba(255, 153, 0, 0.5);
+        }
+        
+        /* Ripple effect */
+        .ripple {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+        
+        /* Shake animation */
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-3px, 0, 0); }
+            40%, 60% { transform: translate3d(3px, 0, 0); }
+        }
+        
+        /* Ripple animation */
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        
+        /* Item exit animation */
+        @keyframes exitRight {
+            0% {
+                transform: translateX(0) rotate(0);
+                opacity: 1;
+            }
+            20% {
+                transform: translateX(20px) rotate(5deg);
+            }
+            100% {
+                transform: translateX(120%) rotate(15deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Particle animation */
+        @keyframes particle {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0) translate(var(--tx), var(--ty));
+            }
+        }
+        
+        /* Bounce animation for new items */
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.3) translateY(40px);
+            }
+            40% {
+                opacity: 1;
+                transform: scale(1.1) translateY(-10px);
+            }
+            70% {
+                transform: scale(0.9) translateY(5px);
+            }
+            100% {
+                transform: scale(1) translateY(0);
+            }
+        }
+        
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            width: 8px;
+            height: 8px;
+            opacity: 0;
+            pointer-events: none;
+            background: linear-gradient(135deg, #ff4d4d 0%, #f9004d 100%);
+            box-shadow: 0 0 10px 2px rgba(249, 0, 77, 0.3);
+        }
+        
+        /* Glow effect on hover */
+        .card-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255, 77, 77, 0.1) 0%, rgba(249, 0, 77, 0.1) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .card-item:hover::before {
+            opacity: 1;
+        }
+        
+        /* Title styling */
+        .title {
+            text-align: center;
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            color: #f8f8f8;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            background: linear-gradient(to right, #f9004d, #ff4d4d);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .subtitle {
+            text-align: center;
+            font-size: 1.1rem;
+            color: #aaa;
+            margin-bottom: 2.5rem;
+        }
+        
+        /* Add new item button */
+        .add-btn {
+            display: block;
+            margin: 2rem auto 0;
+            background: linear-gradient(135deg, #4d79ff 0%, #4da6ff 100%);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.6rem;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(77, 122, 255, 0.4);
+        }
+        
+        .add-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(77, 122, 255, 0.5);
+        }
+        
+        .new-item {
+            animation: bounceIn 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+    </style>
+</head>
+<body class="bg-gray-900">
+    <div class="container">
+        <h1 class="title">Animated Delete Buttons by snappy_codes.08</h1>
+        <p class="subtitle">Hover over items and click the delete buttons to see cool animations</p>
+        
+        <div id="card-container">
+            <div class="card-item">
+                <div class="card-content">
+                    <div class="card-text">Task: Complete the project report</div>
+                    <button class="delete-btn">Delete</button>
+                </div>
+            </div>
+            
+            <div class="card-item">
+                <div class="card-content">
+                    <div class="card-text">Task: Schedule team meeting</div>
+                    <button class="delete-btn">Delete</button>
+                </div>
+            </div>
+            
+            <div class="card-item">
+                <div class="card-content">
+                    <div class="card-text">Task: Review client feedback</div>
+                    <button class="delete-btn">Delete</button>
+                </div>
+            </div>
+            
+            <div class="card-item">
+                <div class="card-content">
+                    <div class="card-text">Task: Update website content</div>
+                    <button class="delete-btn">Delete</button>
+                </div>
+            </div>
+            
+            <div class="card-item">
+                <div class="card-content">
+                    <div class="card-text">Task: Prepare monthly report</div>
+                    <button class="delete-btn">Delete</button>
+                </div>
+            </div>
+        </div>
+        
+        <button class="add-btn">Add New Item</button>
+    </div>
+
+    <script>
+        // Counter for generating unique items
+        let itemCounter = 6;
+        
+        // Tasks for new items
+        const tasks = [
+            "Call client about project changes",
+            "Review new design mockups",
+            "Finalize budget proposal",
+            "Update social media accounts",
+            "Send weekly newsletter",
+            "Organize digital assets",
+            "Plan marketing campaign",
+            "Research competitors' strategies",
+            "Fix website responsiveness issues",
+            "Prepare for quarterly presentation"
+        ];
+
+        // Handle button clicks
+        document.addEventListener('click', function(e) {
+            // Delete button functionality
+            if (e.target.classList.contains('delete-btn')) {
+                handleDeleteButtonClick(e.target);
+            }
+            
+            // Add new item button
+            if (e.target.classList.contains('add-btn')) {
+                addNewItem();
+            }
+            
+            // Add ripple effect to all buttons
+            if (e.target.classList.contains('delete-btn') || e.target.classList.contains('add-btn')) {
+                createRippleEffect(e);
+            }
+        });
+
+        // Handle delete button click
+        function handleDeleteButtonClick(button) {
+            if (button.classList.contains('confirm')) {
+                // Confirmed delete - animate the item out
+                const cardItem = button.closest('.card-item');
+                
+                // Create particle explosion effect
+                createParticles(cardItem);
+                
+                // Animate card exit
+                cardItem.style.animation = 'exitRight 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
+                
+                // Remove the card after animation
+                setTimeout(() => {
+                    cardItem.remove();
+                }, 700);
+            } else {
+                // First click - change to confirm state
+                button.classList.add('confirm');
+                button.textContent = 'Confirm';
+                
+                // Reset after 3 seconds if not confirmed
+                setTimeout(() => {
+                    if (button.classList.contains('confirm')) {
+                        button.classList.remove('confirm');
+                        button.textContent = 'Delete';
+                    }
+                }, 3000);
+            }
+        }
+
+        // Create ripple effect
+        function createRippleEffect(e) {
+            const button = e.target;
+            
+            // Remove existing ripples
+            const existingRipple = button.querySelector('.ripple');
+            if (existingRipple) {
+                existingRipple.remove();
+            }
+            
+            const ripple = document.createElement('span');
+            ripple.classList.add('ripple');
+            button.appendChild(ripple);
+            
+            // Position the ripple
+            const rect = button.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            ripple.style.width = ripple.style.height = `${size}px`;
+            
+            const x = e.clientX - rect.left - size / 2;
+            const y = e.clientY - rect.top - size / 2;
+            
+            ripple.style.left = `${x}px`;
+            ripple.style.top = `${y}px`;
+            
+            // Remove ripple after animation
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        }
+
+        // Create particle explosion effect
+        function createParticles(element) {
+            const rect = element.getBoundingClientRect();
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            // Create 20 particles
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Random position within the card
+                const x = Math.random() * rect.width;
+                const y = Math.random() * rect.height;
+                particle.style.left = `${x}px`;
+                particle.style.top = `${y}px`;
+                
+                // Random directions
+                const tx = (Math.random() - 0.5) * 200;
+                const ty = (Math.random() - 0.5) * 200;
+                particle.style.setProperty('--tx', `${tx}px`);
+                particle.style.setProperty('--ty', `${ty}px`);
+                
+                // Random size
+                const size = Math.random() * 8 + 4;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                // Add particle to the card
+                element.appendChild(particle);
+                
+                // Animate the particle
+                setTimeout(() => {
+                    particle.style.animation = `particle 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards`;
+                }, Math.random() * 100);
+            }
+        }
+
+        // Add a new item to the list
+        function addNewItem() {
+            const container = document.getElementById('card-container');
+            const randomTask = tasks[Math.floor(Math.random() * tasks.length)];
+            
+            const newItem = document.createElement('div');
+            newItem.classList.add('card-item', 'new-item');
+            
+            newItem.innerHTML = `
+                <div class="card-content">
+                    <div class="card-text">Task: ${randomTask}</div>
+                    <button class="delete-btn">Delete</button>
+                </div>
+            `;
+            
+            container.appendChild(newItem);
+            itemCounter++;
+        }
+    </script>
+</body>
+</html>
