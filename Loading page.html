@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unique Fluid Loading Animation</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #111827;
+            font-family: 'Inter', sans-serif;
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 600px;
+            padding: 2rem;
+        }
+
+        .loader-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            overflow: hidden;
+        }
+
+        .liquid-loader {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .liquid-tank {
+            width: 200px;
+            height: 200px;
+            position: relative;
+            border-radius: 50%;
+            overflow: hidden;
+            background: rgba(10, 10, 20, 0.2);
+            backdrop-filter: blur(4px);
+            box-shadow: 
+                0 0 0 2px rgba(255, 255, 255, 0.05),
+                0 20px 30px rgba(0, 0, 0, 0.3),
+                inset 0 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .liquid {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #4f46e5, #8b5cf6);
+            transition: all 0.5s;
+            animation: fillAnimation 2s forwards, colorChange 6s infinite;
+        }
+
+        .liquid::before,
+        .liquid::after {
+            content: "";
+            position: absolute;
+            width: 200%;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            left: -50%;
+            border-radius: 45%;
+        }
+
+        .liquid::before {
+            top: -25px;
+            animation: wave 5s linear infinite;
+        }
+
+        .liquid::after {
+            top: -15px;
+            animation: wave 5s linear infinite reverse;
+            opacity: 0.6;
+        }
+
+        .percentage {
+            position: absolute;
+            font-size: 48px;
+            font-weight: 600;
+            z-index: 10;
+            color: #fff;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: radial-gradient(
+                circle at center,
+                rgba(139, 92, 246, 0.3) 0%,
+                rgba(79, 70, 229, 0) 70%
+            );
+            animation: glowPulse 4s infinite alternate;
+            z-index: -1;
+        }
+
+        .particles-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0;
+            animation: floatUp var(--duration, 3s) ease-in-out var(--delay, 0s) infinite;
+        }
+
+        .bubble {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            bottom: 0;
+            animation: bubbleRise var(--rise-duration, 4s) ease-in var(--rise-delay, 0s) infinite;
+        }
+
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .control-btn {
+            background: rgba(79, 70, 229, 0.2);
+            color: white;
+            border: 1px solid rgba(79, 70, 229, 0.5);
+            padding: 8px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .control-btn:hover {
+            background: rgba(79, 70, 229, 0.4);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(to right, #4f46e5, #8b5cf6);
+            width: 0;
+            transition: width 0.3s;
+            border-radius: 3px;
+        }
+
+        .code-section {
+            margin-top: 40px;
+            background: rgba(17, 24, 39, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        pre {
+            overflow-x: auto;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 5px;
+            color: #e2e8f0;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        @keyframes wave {
+            0% {
+                transform: translateX(0) rotate(0);
+            }
+            100% {
+                transform: translateX(-50%) rotate(360deg);
+            }
+        }
+
+        @keyframes fillAnimation {
+            0% {
+                top: 100%;
+            }
+            100% {
+                top: 0%;
+            }
+        }
+
+        @keyframes colorChange {
+            0% {
+                background: linear-gradient(45deg, #4f46e5, #8b5cf6);
+            }
+            25% {
+                background: linear-gradient(45deg, #8b5cf6, #ec4899);
+            }
+            50% {
+                background: linear-gradient(45deg, #ec4899, #06b6d4);
+            }
+            75% {
+                background: linear-gradient(45deg, #06b6d4, #10b981);
+            }
+            100% {
+                background: linear-gradient(45deg, #10b981, #4f46e5);
+            }
+        }
+
+        @keyframes glowPulse {
+            0% {
+                opacity: 0.3;
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+            100% {
+                opacity: 0.6;
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(100px) translateX(0) scale(0.5);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8;
+            }
+            80% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-100px) translateX(var(--x-offset, 0)) scale(1);
+                opacity: 0;
+            }
+        }
+
+        @keyframes bubbleRise {
+            0% {
+                transform: translateY(0) scale(0.5);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-150px) translateX(var(--x-offset, 0)) scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        .title {
+            background: linear-gradient(45deg, #4f46e5, #8b5cf6, #ec4899);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: titleGradient 6s linear infinite;
+            background-size: 200% 200%;
+        }
+
+        @keyframes titleGradient {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .examples-section {
+            margin-top: 60px;
+        }
+
+        .example-card {
+            background: rgba(17, 24, 39, 0.5);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(79, 70, 229, 0.2);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #8b5cf6;
+        }
+
+        .blur-circle {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -2;
+        }
+
+        .blur-1 {
+            width: 300px;
+            height: 300px;
+            background: rgba(79, 70, 229, 0.2);
+            top: -100px;
+            right: -50px;
+        }
+
+        .blur-2 {
+            width: 250px;
+            height: 250px;
+            background: rgba(236, 72, 153, 0.15);
+            bottom: 100px;
+            left: -100px;
+        }
+
+        .glassmorphism {
+            background: rgba(17, 24, 39, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="blur-circle blur-1"></div>
+    <div class="blur-circle blur-2"></div>
+    
+    <div class="container mx-auto px-4 py-16">
+        <h1 class="text-4xl font-bold text-center mb-2 title">Fluid Loading Animation</h1>
+        <p class="text-center text-gray-400 mb-10">A modern, smooth liquid-based loading animation</p>
+
+        <div class="glassmorphism p-10 mb-12 mx-auto">
+            <div class="loader-container mx-auto">
+                <div class="glow"></div>
+                <div class="liquid-loader flex justify-center items-center">
+                    <div class="liquid-tank">
+                        <div class="liquid"></div>
+                    </div>
+                    <div class="percentage">0%</div>
+                </div>
+                <div class="particles-container" id="particles"></div>
+            </div>
+
+            <div class="progress-bar mt-8">
+                <div class="progress" id="progress-bar"></div>
+            </div>
+
+            <div class="controls mt-6">
+                <button class="control-btn" id="reset-btn">Reset</button>
+                <button class="control-btn" id="animate-btn">Animate</button>
+                <button class="control-btn" id="speed-btn">Toggle Speed</button>
+            </div>
+        </div>
+
+        <div class="examples-section">
+            <h2 class="text-2xl font-bold mb-6 text-center">How To Use This Loader</h2>
+            
+            <div class="example-card">
+                <div class="card-title">Basic Implementation</div>
+                <p class="text-gray-300 mb-4">Add this loader to your website with a few simple steps:</p>
+                <p class="text-gray-400 text-sm mb-2">1. Copy the HTML structure</p>
+                <p class="text-gray-400 text-sm mb-2">2. Include the CSS styles</p>
+                <p class="text-gray-400 text-sm">3. Add the JavaScript for animation control</p>
+            </div>
+
+            <div class="example-card">
+                <div class="card-title">Customization Options</div>
+                <p class="text-gray-300 mb-4">This loader can be easily customized:</p>
+                <ul class="list-disc pl-5 text-gray-400 text-sm">
+                    <li class="mb-2">Change the gradient colors in the CSS</li>
+                    <li class="mb-2">Adjust the animation timing</li>
+                    <li class="mb-2">Modify the size of the liquid container</li>
+                    <li>Add or remove particle effects</li>
+                </ul>
+            </div>
+
+            <div class="example-card">
+                <div class="card-title">Integration Example</div>
+                <p class="text-gray-300 mb-4">Typical usage in your application:</p>
+                <pre class="text-sm">
+// Show loader when starting an async operation
+document.querySelector('.loader-container').style.display = 'flex';
+
+// Hide loader when operation completes
+function hideLoader() {
+  document.querySelector('.loader-container').style.display = 'none';
+}
+
+// Update progress (if applicable)
+function updateProgress(percent) {
+  document.querySelector('.percentage').textContent = percent + '%';
+  document.querySelector('.liquid').style.top = (100 - percent) + '%';
+  document.querySelector('.progress').style.width = percent + '%';
+}
+                </pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const liquid = document.querySelector('.liquid');
+            const percentage = document.querySelector('.percentage');
+            const progressBar = document.getElementById('progress-bar');
+            const resetBtn = document.getElementById('reset-btn');
+            const animateBtn = document.getElementById('animate-btn');
+            const speedBtn = document.getElementById('speed-btn');
+            const particlesContainer = document.getElementById('particles');
+            
+            // Variables
+            let progress = 0;
+            let animationSpeed = 1;
+            let animationInterval;
+            let isAnimating = false;
+            
+            // Create particles
+            function createParticles() {
+                particlesContainer.innerHTML = '';
+                const particleCount = 20;
+                
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.setProperty('--duration', (2 + Math.random() * 3) + 's');
+                    particle.style.setProperty('--delay', (Math.random() * 5) + 's');
+                    particle.style.setProperty('--x-offset', (Math.random() * 100 - 50) + 'px');
+                    particle.style.left = Math.random() * 100 + '%';
+                    particlesContainer.appendChild(particle);
+                }
+            }
+            
+            // Create bubbles
+            function createBubbles() {
+                const bubbleCount = 15;
+                
+                for (let i = 0; i < bubbleCount; i++) {
+                    const bubble = document.createElement('div');
+                    bubble.className = 'bubble';
+                    bubble.style.setProperty('--rise-duration', (3 + Math.random() * 3) + 's');
+                    bubble.style.setProperty('--rise-delay', (Math.random() * 5) + 's');
+                    bubble.style.setProperty('--x-offset', (Math.random() * 60 - 30) + 'px');
+                    bubble.style.left = Math.random() * 100 + '%';
+                    bubble.style.width = (5 + Math.random() * 10) + 'px';
+                    bubble.style.height = bubble.style.width;
+                    bubble.style.opacity = 0.1 + Math.random() * 0.4;
+                    particlesContainer.appendChild(bubble);
+                }
+            }
+            
+            // Update progress
+            function updateProgress() {
+                if (progress < 100) {
+                    progress += 1;
+                    percentage.textContent = progress + '%';
+                    liquid.style.top = (100 - progress) + '%';
+                    progressBar.style.width = progress + '%';
+                } else {
+                    clearInterval(animationInterval);
+                    isAnimating = false;
+                }
+            }
+            
+            // Reset animation
+            function resetAnimation() {
+                clearInterval(animationInterval);
+                progress = 0;
+                percentage.textContent = '0%';
+                liquid.style.top = '100%';
+                progressBar.style.width = '0%';
+                isAnimating = false;
+            }
+            
+            // Start animation
+            function startAnimation() {
+                if (!isAnimating) {
+                    isAnimating = true;
+                    resetAnimation();
+                    animationInterval = setInterval(updateProgress, 50 / animationSpeed);
+                }
+            }
+            
+            // Toggle animation speed
+            function toggleSpeed() {
+                if (animationSpeed === 1) {
+                    animationSpeed = 2;
+                    speedBtn.textContent = 'Normal Speed';
+                } else {
+                    animationSpeed = 1;
+                    speedBtn.textContent = 'Fast Speed';
+                }
+                
+                if (isAnimating) {
+                    clearInterval(animationInterval);
+                    animationInterval = setInterval(updateProgress, 50 / animationSpeed);
+                }
+            }
+            
+            // Event listeners
+            resetBtn.addEventListener('click', resetAnimation);
+            animateBtn.addEventListener('click', startAnimation);
+            speedBtn.addEventListener('click', toggleSpeed);
+            
+            // Initialize
+            createParticles();
+            createBubbles();
+            
+            // Start animation on load
+            setTimeout(startAnimation, 500);
+        });
+    </script>
+</body>
+</html>
