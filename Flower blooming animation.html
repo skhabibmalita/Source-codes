@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flower Bloom Animation</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #000;
+            overflow: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-bloom {
+            position: relative;
+            padding: 12px 24px;
+            background: linear-gradient(145deg, #ff3e9d, #ff0f7b);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            overflow: hidden;
+            transition: all 0.3s;
+            z-index: 100;
+            box-shadow: 0 0 15px rgba(255, 15, 123, 0.6);
+            margin-top: 20px;
+        }
+
+        .btn-bloom:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 25px rgba(255, 15, 123, 0.8);
+        }
+        
+        .btn-bloom:active {
+            transform: translateY(1px);
+        }
+
+        .btn-bloom::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .btn-bloom:hover::before {
+            left: 100%;
+        }
+
+        .flower-container {
+            position: relative;
+            width: 100%;
+            height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stem {
+            position: absolute;
+            bottom: 0;
+            width: 10px;
+            height: 0;
+            background: linear-gradient(to top, #1f9928, #3FCA5D);
+            border-radius: 5px;
+            transition: height 2s ease-out;
+            z-index: 1;
+        }
+
+        .flower-center {
+            position: absolute;
+            bottom: 220px;
+            width: 30px;
+            height: 30px;
+            background: #FFD700;
+            border-radius: 50%;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.5s ease-out;
+            z-index: 3;
+        }
+
+        .petal {
+            position: absolute;
+            width: 50px;
+            height: 80px;
+            background: linear-gradient(45deg, #ff3e9d, #ff9d00);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            transform-origin: bottom center;
+            opacity: 0;
+            transition: all 0.8s ease-out;
+            z-index: 2;
+        }
+
+        .leaf {
+            position: absolute;
+            width: 40px;
+            height: 20px;
+            background: linear-gradient(to right, #1f9928, #3FCA5D);
+            border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+            transform-origin: left center;
+            opacity: 0;
+            transition: all 0.8s ease-out;
+            z-index: 1;
+        }
+
+        /* Active states for animation */
+        .stem.active {
+            height: 200px;
+        }
+
+        .leaf.active {
+            opacity: 1;
+            transform: rotate(0deg);
+        }
+
+        .flower-center.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .petal.active {
+            opacity: 1;
+            transform: rotate(var(--rotate)) translateY(-20px);
+        }
+
+        /* Petal colors */
+        .petal:nth-child(odd) {
+            background: linear-gradient(45deg, #ff3e9d, #ff9d00);
+        }
+
+        .petal:nth-child(even) {
+            background: linear-gradient(45deg, #ff00cc, #3333ff);
+        }
+
+        /* Title styling */
+        .title {
+            color: white;
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Restart button */
+        .btn-restart {
+            position: relative;
+            padding: 8px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            color: white;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 100;
+            opacity: 0;
+            margin-top: 10px;
+        }
+
+        .btn-restart.active {
+            opacity: 1;
+        }
+
+        .btn-restart:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <h1 class="title">Magical Flower Bloom</h1>
+    
+    <div class="flower-container">
+        <div class="stem" id="stem"></div>
+        
+        <!-- Leaves -->
+        <div class="leaf" id="leaf1" style="bottom: 70px; left: 5px; transform: rotate(-45deg);"></div>
+        <div class="leaf" id="leaf2" style="bottom: 120px; left: 5px; transform: rotate(-45deg);"></div>
+        
+        <!-- Flower Center -->
+        <div class="flower-center" id="flower-center"></div>
+        
+        <!-- Petals -->
+        <div class="petal" id="petal1" style="--rotate: 0deg; bottom: 220px;"></div>
+        <div class="petal" id="petal2" style="--rotate: 45deg; bottom: 220px;"></div>
+        <div class="petal" id="petal3" style="--rotate: 90deg; bottom: 220px;"></div>
+        <div class="petal" id="petal4" style="--rotate: 135deg; bottom: 220px;"></div>
+        <div class="petal" id="petal5" style="--rotate: 180deg; bottom: 220px;"></div>
+        <div class="petal" id="petal6" style="--rotate: 225deg; bottom: 220px;"></div>
+        <div class="petal" id="petal7" style="--rotate: 270deg; bottom: 220px;"></div>
+        <div class="petal" id="petal8" style="--rotate: 315deg; bottom: 220px;"></div>
+    </div>
+
+    <button class="btn-bloom" id="bloom-btn">Bloom Flower</button>
+    <button class="btn-restart" id="restart-btn">Reset</button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const bloomBtn = document.getElementById('bloom-btn');
+            const restartBtn = document.getElementById('restart-btn');
+            const stem = document.getElementById('stem');
+            const leaf1 = document.getElementById('leaf1');
+            const leaf2 = document.getElementById('leaf2');
+            const flowerCenter = document.getElementById('flower-center');
+            const petals = document.querySelectorAll('.petal');
+
+            bloomBtn.addEventListener('click', () => {
+                // Start the animation sequence
+                bloomBtn.disabled = true;
+                bloomBtn.style.opacity = '0.5';
+                
+                // Animate stem
+                stem.classList.add('active');
+                
+                // Animate leaves with delay
+                setTimeout(() => {
+                    leaf1.classList.add('active');
+                }, 1000);
+                
+                setTimeout(() => {
+                    leaf2.classList.add('active');
+                }, 1500);
+                
+                // Animate flower center
+                setTimeout(() => {
+                    flowerCenter.classList.add('active');
+                }, 2000);
+                
+                // Animate petals with staggered delay
+                petals.forEach((petal, index) => {
+                    setTimeout(() => {
+                        petal.classList.add('active');
+                        
+                        // Add special effects to each petal
+                        petal.style.transition = 'all 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                        
+                        // If this is the last petal, show the restart button
+                        if (index === petals.length - 1) {
+                            setTimeout(() => {
+                                restartBtn.classList.add('active');
+                            }, 1000);
+                        }
+                    }, 2000 + (index * 200)); // Stagger the animation
+                });
+            });
+            
+            // Reset animation
+            restartBtn.addEventListener('click', () => {
+                stem.classList.remove('active');
+                leaf1.classList.remove('active');
+                leaf2.classList.remove('active');
+                flowerCenter.classList.remove('active');
+                
+                petals.forEach(petal => {
+                    petal.classList.remove('active');
+                });
+                
+                restartBtn.classList.remove('active');
+                
+                // Re-enable the bloom button
+                setTimeout(() => {
+                    bloomBtn.disabled = false;
+                    bloomBtn.style.opacity = '1';
+                }, 500);
+            });
+
+            // Add some particle effects to enhance the animation
+            function createParticles() {
+                const container = document.querySelector('.flower-container');
+                
+                for (let i = 0; i < 30; i++) {
+                    const particle = document.createElement('div');
+                    
+                    particle.style.position = 'absolute';
+                    particle.style.width = `${Math.random() * 5 + 2}px`;
+                    particle.style.height = particle.style.width;
+                    particle.style.background = `hsl(${Math.random() * 60 + 300}, 100%, 70%)`;
+                    particle.style.borderRadius = '50%';
+                    particle.style.opacity = '0';
+                    particle.style.bottom = '220px';
+                    particle.style.left = 'calc(50% - 2.5px)';
+                    particle.style.zIndex = '1';
+                    
+                    container.appendChild(particle);
+                    
+                    bloomBtn.addEventListener('click', () => {
+                        // Animate particles with delay
+                        setTimeout(() => {
+                            const angle = Math.random() * Math.PI * 2;
+                            const distance = Math.random() * 100 + 50;
+                            
+                            particle.style.transition = `all ${Math.random() * 2 + 2}s ease-out`;
+                            particle.style.opacity = Math.random() * 0.7 + 0.3;
+                            particle.style.transform = `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance - 100}px)`;
+                            
+                            setTimeout(() => {
+                                particle.style.opacity = '0';
+                            }, Math.random() * 1500 + 1000);
+                        }, 3000);
+                    });
+                    
+                    restartBtn.addEventListener('click', () => {
+                        particle.style.opacity = '0';
+                        particle.style.transform = 'translate(0, 0)';
+                    });
+                }
+            }
+            
+            createParticles();
+
+            // Add subtle animation to the button
+            function pulseAnimation() {
+                let scale = 1;
+                let growing = true;
+                
+                setInterval(() => {
+                    if (growing) {
+                        scale += 0.003;
+                        if (scale >= 1.05) growing = false;
+                    } else {
+                        scale -= 0.003;
+                        if (scale <= 1) growing = true;
+                    }
+                    
+                    bloomBtn.style.transform = `scale(${scale}) translateY(-3px)`;
+                }, 50);
+            }
+            
+            pulseAnimation();
+        });
+    </script>
+</body>
+</html>
