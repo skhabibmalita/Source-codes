@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Music Player</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1db954;
+            --dark: #121212;
+            --light: #f1f1f1;
+            --secondary: #535353;
+        }
+        
+        body {
+            background-color: #0f172a;
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
+        
+        .music-player {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 20px;
+            width: 340px;
+            padding: 25px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3),
+                        0 0 30px rgba(29, 185, 84, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .music-player:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4),
+                        0 0 40px rgba(29, 185, 84, 0.2);
+        }
+        
+        .album-cover {
+            width: 100%;
+            height: 200px;
+            border-radius: 12px;
+            background-size: cover;
+            background-position: center;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .album-cover::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40%;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+        }
+        
+        .song-info {
+            margin-bottom: 20px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .play-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(29, 185, 84, 0.5);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .play-btn::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: rgba(29, 185, 84, 0.3);
+            z-index: -1;
+            animation: pulse 2s infinite;
+            opacity: 0;
+        }
+        
+        .play-btn.active::before {
+            opacity: 1;
+        }
+        
+        .play-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(29, 185, 84, 0.8);
+        }
+        
+        .progress-container {
+            background: rgba(255, 255, 255, 0.1);
+            height: 6px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress {
+            background: var(--primary);
+            height: 100%;
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+        
+        .time {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--light);
+            opacity: 0.7;
+        }
+        
+        .visualizer {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            height: 40px;
+            margin-top: 20px;
+        }
+        
+        .bar {
+            width: 4px;
+            margin: 0 2px;
+            background: var(--primary);
+            border-radius: 2px;
+            animation-duration: 0.8s;
+            animation-iteration-count: infinite;
+            animation-direction: alternate;
+            animation-timing-function: ease-in-out;
+        }
+        
+        .bar:nth-child(1) { animation-name: bar1; animation-delay: 0.1s; }
+        .bar:nth-child(2) { animation-name: bar2; animation-delay: 0.2s; }
+        .bar:nth-child(3) { animation-name: bar3; animation-delay: 0.3s; }
+        .bar:nth-child(4) { animation-name: bar4; animation-delay: 0.4s; }
+        .bar:nth-child(5) { animation-name: bar5; animation-delay: 0.5s; }
+        .bar:nth-child(6) { animation-name: bar3; animation-delay: 0.6s; }
+        .bar:nth-child(7) { animation-name: bar2; animation-delay: 0.7s; }
+        .bar:nth-child(8) { animation-name: bar4; animation-delay: 0.8s; }
+        .bar:nth-child(9) { animation-name: bar1; animation-delay: 0.9s; }
+        .bar:nth-child(10) { animation-name: bar5; animation-delay: 1.0s; }
+        
+        .paused .bar {
+            animation-play-state: paused;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        
+        @keyframes bar1 {
+            0% { height: 5px; }
+            100% { height: 20px; }
+        }
+        
+        @keyframes bar2 {
+            0% { height: 10px; }
+            100% { height: 30px; }
+        }
+        
+        @keyframes bar3 {
+            0% { height: 15px; }
+            100% { height: 35px; }
+        }
+        
+        @keyframes bar4 {
+            0% { height: 5px; }
+            100% { height: 25px; }
+        }
+        
+        @keyframes bar5 {
+            0% { height: 10px; }
+            100% { height: 40px; }
+        }
+        
+        .control-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-gray-900">
+    <div class="music-player">
+        <div class="album-cover" style="background-image: url('https://cdn.jsdelivr.net/gh/mozilla/nunjucks@master/docs/img/firefox.png');">
+            <img src="snappy.png" alt="snappy" srcset="">
+        </div>
+        
+        <div class="song-info">
+            <h2 class="text-white text-xl font-bold mb-1">Touch the SKY</h2>
+            <p class="text-gray-400 text-sm">@snappy_codes.08</p>
+        </div>
+        
+        <div class="controls">
+            <div class="control-btn">
+                <i class="fas fa-step-backward text-white"></i>
+            </div>
+            
+            <div class="play-btn" id="playBtn">
+                <i class="fas fa-play text-white text-xl" id="playIcon"></i>
+            </div>
+            
+            <div class="control-btn">
+                <i class="fas fa-step-forward text-white"></i>
+            </div>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress" id="progress"></div>
+        </div>
+        
+        <div class="time">
+            <span id="currentTime">0:00</span>
+            <span id="duration">3:45</span>
+        </div>
+        
+        <div class="visualizer" id="visualizer">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const playBtn = document.getElementById('playBtn');
+            const playIcon = document.getElementById('playIcon');
+            const progress = document.getElementById('progress');
+            const currentTimeEl = document.getElementById('currentTime');
+            const visualizer = document.getElementById('visualizer');
+            
+            let isPlaying = false;
+            let progressInterval;
+            let currentProgress = 0;
+            const songDuration = 225; // 3:45 in seconds
+            
+            // Format time from seconds to MM:SS
+            function formatTime(seconds) {
+                const minutes = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${minutes}:${secs < 10 ? '0' + secs : secs}`;
+            }
+            
+            // Update progress bar
+            function updateProgress() {
+                if (currentProgress < songDuration) {
+                    currentProgress += 0.1;
+                    const progressPercent = (currentProgress / songDuration) * 100;
+                    progress.style.width = `${progressPercent}%`;
+                    currentTimeEl.textContent = formatTime(currentProgress);
+                } else {
+                    // Reset when song ends
+                    clearInterval(progressInterval);
+                    currentProgress = 0;
+                    progress.style.width = '0%';
+                    currentTimeEl.textContent = '0:00';
+                    isPlaying = false;
+                    playIcon.classList.remove('fa-pause');
+                    playIcon.classList.add('fa-play');
+                    playBtn.classList.remove('active');
+                    visualizer.classList.add('paused');
+                }
+            }
+            
+            // Toggle play/pause
+            playBtn.addEventListener('click', () => {
+                if (isPlaying) {
+                    // Pause
+                    clearInterval(progressInterval);
+                    playIcon.classList.remove('fa-pause');
+                    playIcon.classList.add('fa-play');
+                    playBtn.classList.remove('active');
+                    visualizer.classList.add('paused');
+                } else {
+                    // Play
+                    progressInterval = setInterval(updateProgress, 100);
+                    playIcon.classList.remove('fa-play');
+                    playIcon.classList.add('fa-pause');
+                    playBtn.classList.add('active');
+                    visualizer.classList.remove('paused');
+                }
+                
+                isPlaying = !isPlaying;
+            });
+            
+            // Set visualizer to paused initially
+            visualizer.classList.add('paused');
+            
+            // Make progress bar clickable
+            const progressContainer = document.querySelector('.progress-container');
+            progressContainer.addEventListener('click', (e) => {
+                const width = progressContainer.clientWidth;
+                const clickX = e.offsetX;
+                const clickPercent = (clickX / width);
+                
+                currentProgress = songDuration * clickPercent;
+                progress.style.width = `${clickPercent * 100}%`;
+                currentTimeEl.textContent = formatTime(currentProgress);
+            });
+        });
+    </script>
+</body>
+</html>
