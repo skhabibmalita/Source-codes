@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Catch the Dot Game</title>
+  <!-- Tailwind CSS via jsdelivr CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/lib/index.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- For possible emoji icons via twemoji -->
+  <link rel="icon" href="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/2/svg/1f7e1.svg">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex flex-col items-center pt-12">
+  <h1 class="text-3xl md:text-4xl font-extrabold text-indigo-700 mb-6 drop-shadow">Catch the Dot!</h1>
+  <div class="flex items-center space-x-8 mb-4">
+    <div class="bg-white shadow rounded px-4 py-2 flex items-center space-x-2">
+      <span class="text-lg font-semibold text-indigo-500">Score:</span>
+      <span id="score" class="text-2xl text-green-600 font-bold">0</span>
+    </div>
+    <div class="bg-white shadow rounded px-4 py-2 flex items-center space-x-2">
+      <span class="text-lg font-semibold text-indigo-500">Time Left:</span>
+      <span id="timer" class="text-2xl text-red-600 font-bold">20</span>
+      <span class="text-lg font-semibold text-gray-400">s</span>
+    </div>
+  </div>
+  <div class="mb-4">
+    <button id="startBtn" class="bg-indigo-600 hover:bg-indigo-700 transition-colors text-white font-semibold px-6 py-2 rounded shadow-lg text-lg">Start Game</button>
+  </div>
+  <div id="gameArea" class="relative bg-white rounded-xl shadow-lg w-[350px] h-[500px] overflow-hidden select-none border border-indigo-200 mb-8">
+    <!-- Dot will be added dynamically -->
+  </div>
+  <div id="gameOverMsg" class="hidden text-center">
+    <div class="text-3xl font-bold text-indigo-700 mb-2">⏰ Time's up!</div>
+    <div class="text-xl font-semibold text-gray-600 mb-4">Your final score: <span id="finalScore" class="text-green-600"></span></div>
+    <button id="restartBtn" class="bg-green-500 hover:bg-green-600 transition-colors text-white font-semibold px-5 py-2 rounded shadow">Play Again</button>
+  </div>
+  <footer class="mt-10 text-gray-400 text-sm">
+    Made by snappy_codes.08 <span class="text-red-400">♥</span> | Try to catch as many dots as possible in 20 seconds!
+  </footer>
+  <script>
+    // Game Variables
+    const gameArea = document.getElementById('gameArea');
+    const scoreDisplay = document.getElementById('score');
+    const timerDisplay = document.getElementById('timer');
+    const startBtn = document.getElementById('startBtn');
+    const gameOverMsg = document.getElementById('gameOverMsg');
+    const restartBtn = document.getElementById('restartBtn');
+    const finalScoreSpan = document.getElementById('finalScore');
+    let score = 0;
+    let timeLeft = 20;
+    let timerInterval = null;
+    let gameStarted = false;
+    let dot = null;
+
+    // Utility: Get random int in min-max range (inclusive min, exclusive max)
+    function randInt(min, max) {
+      return Math.floor(Math.random() * (max - min)) + min;
+    }
+
+    // Create dot
+    function createDot() {
+      if (dot && dot.parentNode) {
+        dot.parentNode.removeChild(dot);
+      }
+      dot = document.createElement('div');
+      // Choose emoji or dot
+      // let dotContent = Math.random() > 0.3 ? '<span class="text-3xl">🟠</span>' : '';
+      // dot.innerHTML = dotContent;
+      // Dot styling
+      dot.className = 'absolute cursor-pointer w-12 h-12 rounded-full bg-orange-400 border-4 border-orange-300 shadow-lg transition-all duration-75 flex items-center justify-center text-3xl hover:scale-110 active:scale-90';
+      dot.setAttribute('aria-label', 'dot');
+      // Random position inside the area
+      const areaRect = gameArea.getBoundingClientRect();
+      const dotSize = 48; // w-12 h-12 = 48px
+      const x = randInt(0, gameArea.clientWidth - dotSize);
+      const y = randInt(0, gameArea.clientHeight - dotSize);
+      dot.style.left = x + 'px';
+      dot.style.top = y + 'px';
+      dot.addEventListener('click', onDotClicked);
+      gameArea.appendChild(dot);
+    }
+
+    function onDotClicked(e) {
+      if (!gameStarted) return;
+      score += 1;
+      scoreDisplay.textContent = score;
+      createDot();
+    }
+
+    function startGame() {
+      score = 0;
+      timeLeft = 20;
+      scoreDisplay.textContent = score;
+      timerDisplay.textContent = timeLeft;
+      gameStarted = true;
+      startBtn.disabled = true;
+      startBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      gameOverMsg.classList.add('hidden');
+      gameArea.classList.remove('grayscale');
+      finalScoreSpan.textContent = '';
+      createDot();
+
+      timerInterval = setInterval(() => {
+        timeLeft -= 1;
+        timerDisplay.textContent = timeLeft;
+        if (timeLeft <= 0) {
+          endGame();
+        }
+      }, 1000);
+    }
+
+    function endGame() {
+      clearInterval(timerInterval);
+      gameStarted = false;
+      if (dot && dot.parentNode) {
+        dot.parentNode.removeChild(dot);
+        dot = null;
+      }
+      finalScoreSpan.textContent = score;
+      gameOverMsg.classList.remove('hidden');
+      gameArea.classList.add('grayscale');
+      startBtn.disabled = false;
+      startBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+
+    // Responsive: Reposition dot on resize
+    window.addEventListener('resize', () => {
+      if (gameStarted && dot) {
+        createDot();
+      }
+    });
+
+    startBtn.addEventListener('click', startGame);
+    if (restartBtn) {
+      restartBtn.addEventListener('click', startGame);
+    }
+
+    // Prevent accidental text/click selection
+    gameArea.addEventListener('mousedown', e => e.preventDefault());
+  </script>
+</body>
+</html>
+
