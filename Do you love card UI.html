@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Do You Love Me?</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Tailwind CSS v2.2.19 -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <!-- Font Awesome v6.5.2 -->
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css" rel="stylesheet">
+  <!-- Google Fonts: Pacifico + Montserrat -->
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: radial-gradient(ellipse at bottom, #ffe6f7 80%, #ffb3c6 100%);
+      min-height: 100vh;
+      font-family: 'Montserrat', sans-serif;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    .love-card {
+      font-family: 'Pacifico', cursive;
+      box-shadow: 0 10px 40px rgba(240, 35, 140, 0.20), 0 4px 12px #fccde2;
+      transition: box-shadow 0.3s;
+      background: linear-gradient(135deg, #fff0f6 90%, #fbc2eb 100%);
+      border-radius: 2.5rem;
+      overflow: visible;
+      position: relative;
+    }
+
+    /* Button pulse animation */
+    .pulse {
+      animation: pulse 1.2s infinite alternate;
+    }
+    @keyframes pulse {
+      0% {box-shadow:0 0 0 0 #ff7eb3ad;}
+      100%{box-shadow:0 0 0 12px #ff7eb308;}
+    }
+
+    /* Heart float animation */
+    .floating-heart {
+      position: absolute;
+      font-size: 2.6rem;
+      color: #ff5e99;
+      pointer-events: none;
+      opacity: 0.80;
+      will-change: transform, opacity;
+      animation: float-heart 2.1s linear forwards;
+    }
+    @keyframes float-heart {
+      0% {
+        opacity: 0.9;
+        transform: translateY(0) scale(1);
+      }
+      80% {
+        opacity: 0.9;
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-180px) scale(1.48) rotate(16deg);
+      }
+    }
+
+    /* Flower Petal Styles  */
+    .petal {
+      position: absolute;
+      width: 26px;
+      height: 28px;
+      background: radial-gradient(circle at 60% 35%, #fec, #ffbbf0 70%);
+      border-radius: 0 60% 60% 60%;
+      opacity: 0.74;
+      animation: float-petal 6s linear infinite;
+      will-change: transform, opacity;
+      z-index: 1;
+    }
+    @keyframes float-petal {
+      0% {transform: translateY(0) rotate(0deg);}
+      80%{ opacity: 0.74;}
+      100% {transform: translateY(-200px) rotate(230deg); opacity:0;}
+    }
+
+    /* .yes-btn & .no-btn stlying improvements */
+    .yes-btn, .no-btn {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 1.55rem !important;
+      padding: 1.1rem 2.5rem !important;
+      border-radius: 2.5rem !important;
+      outline: none !important;
+      border-width: 2px !important;
+      border-style: solid;
+      transition: background 0.16s, color 0.13s, box-shadow 0.18s;
+      box-shadow: 0 4px 20px #ff99ad36, 0 3px 7px #ffd1e333;
+    }
+    .yes-btn {
+      background: linear-gradient(90deg,#ff7eb3 80%,#ff758c 100%);
+      color: #fff;
+      border-color: #ff7eb3;
+    }
+    .no-btn {
+      background: linear-gradient(90deg,#fcb1d1 90%,#ffe6fa 100%);
+      color: #ff5191;
+      border-color: #ffb3d6;
+      cursor: pointer;
+      position: absolute;
+      z-index: 2;
+    }
+    .no-btn:active, .yes-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* Card text styling */
+    .love-title {
+      font-family: 'Pacifico', cursive;
+      font-size: 2.65rem;
+      color: #ff73b8;
+      letter-spacing: 2px;
+      margin-bottom: 1rem;
+    }
+    .love-question {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 2rem;
+      color: #f9006b;
+      margin-bottom: 2.2rem;
+    }
+
+    /* Message page styling */
+    .message-container {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 2.2rem;
+      color: #ff3382;
+      padding: 2.2rem 2.5rem 1.5rem 2.5rem;
+      background: linear-gradient(130deg,#ffefef,#fff 80%);
+      border-radius: 2.3rem;
+      min-width: 350px;
+      margin: auto;
+      box-shadow: 0 6px 34px #ff88cc1a, 0 3px 9px #ffd1e325;
+      text-shadow: 0 1px 11px #ffb3d633;
+      animation: popIn 0.85s;
+      position: relative;
+      z-index: 2;
+    }
+    @keyframes popIn {
+      0% {transform: scale(0.5); opacity: 0;}
+      100% {transform: scale(1); opacity: 1;}
+    }
+
+    /* Panda gif gallery */
+    .panda-gallery {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      justify-content: center;
+      align-items: flex-end;
+      margin-top: 1.5rem;
+      z-index: 1;
+    }
+    .panda-gallery img {
+      width: 120px;
+      max-width: 33vw;
+      border-radius: 1.3rem;
+      box-shadow: 0 4px 18px #ffb3e133, 0 1px 5px #ffa6cb22;
+      border: 3px solid #ffcae6;
+      background: #fff3fb;
+      transition: transform 0.18s;
+    }
+    .panda-gallery img:hover {
+      transform: scale(1.08) rotate(-6deg);
+      box-shadow: 0 8px 32px #ffb3e166, 0 1px 5px #ffa6cb44;
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 700px) {
+      .love-card {min-width: 94vw !important; width: 94vw !important;}
+      .love-title {font-size: 2.1rem;}
+      .love-question {font-size: 1.2rem;}
+      .yes-btn, .no-btn {font-size: 1.08rem !important;}
+      .message-container {min-width: 90vw;}
+      .panda-gallery img {width: 80px;}
+    }
+  </style>
+</head>
+<body>
+  <!-- Heart background effect container -->
+  <div id="heart-bg"></div>
+  <!-- Flower petal background effect -->
+  <div id="petal-bg"></div>
+  <!-- Main Card -->
+  <div id="main-card" class="love-card relative mx-auto mt-28 shadow-2xl flex flex-col items-center min-w-[524px] w-[540px] py-14 px-11">
+    <div class="love-title flex items-center gap-2">
+      <span><i class="fas fa-heartbeat text-pink-400 animate-pulse"></i></span> Do You Love Me? <span><i class="fas fa-heart text-red-400 animate-pulse"></i></span>
+    </div>
+    <div class="love-question text-center mt-2 mb-6">
+      Will you be my forever love?
+      <div class="mt-6 text-5xl"><i class="fas fa-heart text-pink-400 pulse"></i></div>
+    </div>
+    <div class="flex flex-row justify-center items-center relative w-full h-32 mt-6" id="btn-area">
+      <button id="yes-btn" class="yes-btn pulse mr-8 shadow-pink-200 border-2 border-pink-400">Yes!</button>
+      <button id="no-btn" class="no-btn border border-pink-300 transition-all">No</button>
+    </div>
+    <div class="absolute top-2 right-8 animate-bounce"><i class="fas fa-cherry-blossom text-pink-200"></i></div>
+    <div class="absolute bottom-2 left-8 animate-pulse"><i class="fas fa-heart text-pink-200"></i></div>
+  </div>
+
+  <!-- Message Modal - hidden initially -->
+  <div id="message-section" class="fixed inset-0 flex flex-col justify-center items-center bg-pink-50 bg-opacity-90 z-30" style="display:none;">
+    <div class="mt-10"></div>
+    <!-- Heart confetti overlay: positioned absolutely inside this section -->
+    <div id="message-hearts"></div>
+    <div class="message-container flex flex-col items-center">
+      <h2 class="text-3xl font-bold mb-3 flex items-center gap-2"><i class="fas fa-heart text-pink-400"></i> You are my one and only! <i class="fas fa-heart text-pink-400"></i></h2>
+      <div class="mb-5 text-pink-900 text-xl text-center">You make my world blossom with happiness! 🐼💗<br/>I love you tons!</div>
+      <div class="panda-gallery">
+        <img src="https://media.tenor.com/3EhqXoS5f0QAAAAM/i-love-you-panda.gif" alt="I love you panda GIF" loading="lazy">
+        <img src="https://media.tenor.com/OzxBMWtxNWsAAAAM/panda-love.gif" alt="Panda in Love GIF" loading="lazy">
+        <img src="https://media.tenor.com/duH5OTk8j5MAAAAM/pandalove-panda-beauty.gif" alt="Panda Love" loading="lazy">
+        <img src="https://i.pinimg.com/originals/46/36/75/46367591a282869a243f1ead1caca210.gif" alt="Pandas with Hearts" loading="lazy">
+        <img src="https://i.pinimg.com/originals/1b/6f/8f/1b6f8fb5f68dbf6bf950495573f02683.gif" alt="Panda I Love You GIF" loading="lazy">
+      </div>
+      <button onclick="location.reload()" class="mt-9 px-7 py-3 rounded-full bg-pink-400 text-white font-bold text-xl shadow-xl border-2 border-pink-300 transform hover:scale-105 transition-all pulse flex items-center gap-2"><i class="fas fa-redo"></i>Try Again</button>
+    </div>
+  </div>
+
+  <script>
+    // Referencing elements
+    const mainCard = document.getElementById('main-card');
+    const noBtn = document.getElementById('no-btn');
+    const yesBtn = document.getElementById('yes-btn');
+    const btnArea = document.getElementById('btn-area');
+    const messageSection = document.getElementById('message-section');
+    const messageHearts = document.getElementById('message-hearts');
+    const heartBg = document.getElementById('heart-bg');
+    const petalBg = document.getElementById('petal-bg');
+
+    // Initial button placement logic for "No" Button
+    let btnAreaRect = btnArea.getBoundingClientRect();
+    let noBtnWidth = 130;
+    let noBtnHeight = 70;
+    function setNoBtnPosition(x, y) {
+      // Keep within the padded region of the btn area, avoid overlapping "Yes" button
+      let minX = 12, maxX = btnArea.offsetWidth - noBtnWidth - 12;
+      let minY = 8, maxY = btnArea.offsetHeight - noBtnHeight - 8;
+      x = Math.max(minX, Math.min(x, maxX));
+      y = Math.max(minY, Math.min(y, maxY));
+      noBtn.style.left = x + "px";
+      noBtn.style.top = y + "px";
+    }
+
+    // Place noBtn initially
+    function initialNoBtnPlacement() {
+      btnAreaRect = btnArea.getBoundingClientRect();
+      noBtnWidth = noBtn.offsetWidth;
+      noBtnHeight = noBtn.offsetHeight;
+      setNoBtnPosition(btnArea.offsetWidth/2 + 50, btnArea.offsetHeight/2 - noBtnHeight/2 - 10);
+    }
+    setTimeout(initialNoBtnPlacement, 70);
+    window.addEventListener('resize', initialNoBtnPlacement);
+
+    // Make No Button Fly Away Smoothly within the Card
+    function moveNoBtn(ev) {
+      // Get cursor location relative to btnArea
+      let rect = btnArea.getBoundingClientRect();
+      let cursorX = ev.type.startsWith('touch') ? ev.touches[0].clientX : ev.clientX;
+      let cursorY = ev.type.startsWith('touch') ? ev.touches[0].clientY : ev.clientY;
+      let x = cursorX - rect.left;
+      let y = cursorY - rect.top;
+
+      let noBtnRect = noBtn.getBoundingClientRect();
+      let btnX = noBtn.offsetLeft + noBtnWidth/2;
+      let btnY = noBtn.offsetTop + noBtnHeight/2;
+      // Distance from button center to cursor
+      let dx = x - btnX;
+      let dy = y - btnY;
+      let dist = Math.sqrt(dx*dx + dy*dy);
+      // Only react if pointer is near "No" btn
+      if(dist < 120) {
+        // Angle away from pointer, plus a randomize
+        let angle = Math.atan2(dy, dx) + Math.PI + (Math.random()-0.5)*0.6;
+        let moveStep = Math.max(65, (120 - dist) * 1.3);
+        let newX = noBtn.offsetLeft + Math.cos(angle) * moveStep;
+        let newY = noBtn.offsetTop + Math.sin(angle) * moveStep;
+        // Clamp and avoid overlap with "Yes" button
+        setNoBtnPosition(newX, newY);
+
+        // Add shake/bounce animation if close
+        noBtn.style.transition = 'all 0.30s cubic-bezier(0.17, 0.67, 0.83, 0.64)';
+        noBtn.classList.add("pulse");
+        clearTimeout(noBtn.__unpulseTimer);
+        noBtn.__unpulseTimer = setTimeout(()=>{ noBtn.classList.remove("pulse"); noBtn.style.transition='all 0.10s'; }, 360);
+      }
+    }
+
+    // Mobile touch event support
+    function handleTouchMove(e) {
+      if(e.touches && e.touches.length === 1) moveNoBtn(e);
+    }
+
+    // Area listeners, only for pointer interactions
+    btnArea.addEventListener('mousemove', moveNoBtn);
+    btnArea.addEventListener('touchmove', handleTouchMove, {passive: false});
+
+    // Block direct click on "No" button for fun effect
+    noBtn.addEventListener('mousedown', moveNoBtn);
+    noBtn.addEventListener('touchstart', handleTouchMove, {passive: false});
+    noBtn.addEventListener('click', e => {
+      moveNoBtn(e);
+      e.preventDefault();
+      e.stopPropagation();
+      // Optionally shake it as feedback
+      noBtn.animate([{transform:'scale(1.07) rotate(-8deg)'},{transform:'scale(0.99) rotate(7deg)'},{transform:'scale(1) rotate(0)'}],{duration:260});
+    });
+
+    // --------------------------------------------------
+    // "Yes" Button Handler - show message & add hearts/flowers
+    // --------------------------------------------------
+    yesBtn.addEventListener('click', function() {
+      mainCard.style.display = 'none';
+      messageSection.style.display = 'flex';
+      startMessageConfetti();
+    });
+
+    // --------------------------------------------------
+    // Heart background animation
+    // --------------------------------------------------
+    function randomHeart() {
+      const heart = document.createElement('div');
+      heart.className = 'floating-heart';
+      heart.style.left = (8 + Math.random() * 90) + 'vw';
+      heart.style.fontSize = (22 + Math.random()*32) + 'px';
+      heart.innerHTML = '<i class="fas fa-heart"></i>';
+      heartBg.appendChild(heart);
+      setTimeout(()=>heart.remove(), 2400);
+    }
+    setInterval(()=>randomHeart(), 520);
+
+    // Petal Float Animation
+    const petalColors = [
+      'radial-gradient(circle at 60% 35%, #fddfee, #ffc6e6 70%)',
+      'radial-gradient(circle at 60% 35%, #fff4ef, #ffbbea 80%)',
+      'radial-gradient(circle at 60% 35%, #ffeaea, #f2ccff 85%)',
+    ];
+    function randomPetal() {
+      const petal = document.createElement('div');
+      petal.className = 'petal';
+      petal.style.left = (Math.random()*100) + 'vw';
+      petal.style.width = (18+Math.random()*22)+'px';
+      petal.style.height = (19+Math.random()*15)+'px';
+      petal.style.transform = `rotate(${Math.random()*360}deg)`;
+      petal.style.background = petalColors[Math.floor(Math.random()*petalColors.length)];
+      petalBg.appendChild(petal);
+      setTimeout(()=>petal.remove(), 6100);
+    }
+    setInterval(()=>randomPetal(), 370);
+
+    // --------------------------------------------------
+    // Show special hearts inside the message page (confetti!)
+    // --------------------------------------------------
+    function startMessageConfetti() {
+      let id = setInterval(()=> {
+        let h = document.createElement('div');
+        h.className = 'floating-heart';
+        h.style.left = (10 + Math.random()*78) + '%';
+        h.style.fontSize = (36 + Math.random()*48)+'px';
+        h.style.color = ['#ff6fc7','#ff97bf','#cee7fc','#ffb7e2','#fcedd8'][Math.floor(Math.random()*5)];
+        h.style.opacity = 0.89;
+        h.innerHTML = '<i class="fas fa-heart"></i>';
+        messageHearts.appendChild(h);
+        setTimeout(()=>h.remove(), 2100);
+      }, 210);
+      // also float some petals in message page
+      let petalTimer = setInterval(() => {
+        let p = document.createElement('div');
+        p.className = 'petal';
+        p.style.left = (Math.random()*90)+'%';
+        p.style.width = (19+Math.random()*14)+'px';
+        p.style.height = (21+Math.random()*13)+'px';
+        p.style.transform = `rotate(${Math.random()*400}deg)`;
+        p.style.background = petalColors[Math.floor(Math.random()*petalColors.length)];
+        messageHearts.appendChild(p);
+        setTimeout(()=>p.remove(), 4900);
+      }, 500);
+      messageSection._confettiTimers = [id, petalTimer];
+    }
+
+    // ensure initial button placement after load
+    window.addEventListener('DOMContentLoaded', ()=> {
+      setTimeout(initialNoBtnPlacement, 10);
+      setTimeout(initialNoBtnPlacement, 80);
+    });
+  </script>
+</body>
+</html>
+
