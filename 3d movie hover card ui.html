@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marvel 3D Character Pop-Out Cards</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <style>
+        body {
+            background: radial-gradient(circle, #1a1a2e, #16213e);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            perspective: 1000px;
+            overflow-x: hidden;
+        }
+
+        .card-container {
+            position: relative;
+            width: 300px;
+            height: 450px;
+            margin: 40px;
+            perspective: 1500px;
+            transform-style: preserve-3d;
+        }
+
+        .card {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            overflow: visible;
+        }
+
+        .card:hover {
+            transform: rotateY(5deg) rotateX(5deg);
+        }
+
+        .poster {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+            object-fit: cover;
+            backface-visibility: hidden;
+            transition: all 0.8s ease;
+            transform-style: preserve-3d;
+        }
+
+        .character {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 140%;
+            transform: translateZ(10px) translateY(-20%);
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0;
+            z-index: 10;
+            pointer-events: none;
+            transform-style: preserve-3d;
+        }
+
+        .character img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            backface-visibility: hidden;
+            filter: drop-shadow(0 20px 20px rgba(0, 0, 0, 0.6));
+        }
+
+        .card.active {
+            transform: rotateY(0deg) translateZ(50px);
+        }
+
+        .card.active .character {
+            opacity: 1;
+            transform: translateZ(180px) translateY(-20%);
+        }
+
+        .card.active .poster {
+            filter: brightness(0.7);
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
+            pointer-events: none;
+        }
+
+        .glow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.2), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+        }
+
+        .card:hover .glow {
+            opacity: 1;
+        }
+
+        .title {
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.8);
+            letter-spacing: 2px;
+        }
+
+        .card-container:nth-child(1) .card.active .character {
+            transform: translateZ(200px) translateY(-30%) scale(1.1);
+        }
+
+        .card-container:nth-child(2) .card.active .character {
+            transform: translateZ(190px) translateY(-25%) scale(1.05);
+        }
+
+        .card-container:nth-child(3) .card.active .character {
+            transform: translateZ(180px) translateY(-20%) scale(1.1);
+        }
+
+        @keyframes float {
+            0% { transform: translateZ(180px) translateY(-20%); }
+            50% { transform: translateZ(190px) translateY(-22%); }
+            100% { transform: translateZ(180px) translateY(-20%); }
+        }
+
+        .card.active .character {
+            animation: float 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center py-10">
+    <h1 class="title text-4xl md:text-6xl font-bold text-white mb-8 text-center">Marvel 3D Cards</h1>
+    <p class="text-gray-300 text-center mb-10 max-w-2xl px-4">Click on any card to see the character pop out in 3D!</p>
+
+    <div class="flex flex-wrap justify-center items-center">
+        <!-- Iron Man Card -->
+        <div class="card-container">
+            <div class="card">
+                <img src="https://i.ebayimg.com/images/g/ONEAAOSw1dZk-UVe/s-l1200.jpg" alt="Avengers Movie Poster" class="poster">
+                <div class="glow"></div>
+                <div class="character">
+                    <img src="https://pngimg.com/d/ironman_PNG36.png" alt="Iron Man Character">
+                </div>
+            </div>
+            <h3 class="text-center text-white mt-4 font-bold text-xl">Iron Man</h3>
+        </div>
+
+        <!-- Black Panther Card - UPDATED -->
+        <div class="card-container">
+            <div class="card">
+                <img src="https://lumiere-a.akamaihd.net/v1/images/p_blackpanther_19754_4ac13f07.jpeg" alt="Black Panther Movie Poster" class="poster">
+                <div class="glow"></div>
+                <div class="character">
+                    <img src="https://pngfre.com/wp-content/uploads/Black-Panther-16.png" alt="Black Panther Character">
+                </div>
+            </div>
+            <h3 class="text-center text-white mt-4 font-bold text-xl">Black Panther</h3>
+        </div>
+
+        <!-- Thor Card -->
+        <div class="card-container">
+            <div class="card">
+                <img src="https://m.media-amazon.com/images/I/91Uj3gSndaL._AC_UF894,1000_QL80_.jpg" alt="Thor Ragnarok Movie Poster" class="poster">
+                <div class="glow"></div>
+                <div class="character">
+                    <img src="https://www.pngplay.com/wp-content/uploads/12/Thor-Ragnarok-Transparent-Free-PNG.png" alt="Thor Character">
+                </div>
+            </div>
+            <h3 class="text-center text-white mt-4 font-bold text-xl">Thor</h3>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.card');
+            
+            cards.forEach(card => {
+                card.addEventListener('click', function() {
+                    // Toggle active class
+                    this.classList.toggle('active');
+                    
+                    // Apply different perspective to active cards
+                    if (this.classList.contains('active')) {
+                        this.style.transform = 'rotateY(0deg) translateZ(50px)';
+                        
+                        // Add subtle movement to other cards
+                        cards.forEach(otherCard => {
+                            if (otherCard !== this) {
+                                otherCard.style.transform = 'scale(0.95) translateZ(-20px)';
+                                otherCard.querySelector('.poster').style.filter = 'brightness(0.6)';
+                            }
+                        });
+                    } else {
+                        this.style.transform = '';
+                        
+                        // Reset other cards
+                        cards.forEach(otherCard => {
+                            if (otherCard !== this) {
+                                otherCard.style.transform = '';
+                                otherCard.querySelector('.poster').style.filter = '';
+                            }
+                        });
+                    }
+                });
+                
+                // Add hover effect
+                card.addEventListener('mousemove', function(e) {
+                    if (!this.classList.contains('active')) {
+                        const rect = this.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        const y = e.clientY - rect.top;
+                        
+                        const centerX = rect.width / 2;
+                        const centerY = rect.height / 2;
+                        
+                        const angleY = (x - centerX) / 20;
+                        const angleX = (centerY - y) / 20;
+                        
+                        this.style.transform = `rotateY(${angleY}deg) rotateX(${angleX}deg)`;
+                        
+                        // Update glow position
+                        const glow = this.querySelector('.glow');
+                        const percentX = (x / rect.width) * 100;
+                        const percentY = (y / rect.height) * 100;
+                        glow.style.background = `radial-gradient(circle at ${percentX}% ${percentY}%, rgba(255, 255, 255, 0.3), transparent 70%)`;
+                    }
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    if (!this.classList.contains('active')) {
+                        this.style.transform = '';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
