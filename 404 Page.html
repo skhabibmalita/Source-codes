@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 | Lost in Deep Space</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
+    <link href="https://cdn.jsdelivr.net/npm/@fontsource/space-mono@5.0.18/index.css" rel="stylesheet">
+    <style>
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            25% { transform: translateY(-15px) rotate(1deg); }
+            50% { transform: translateY(0px) rotate(0deg); }
+            75% { transform: translateY(15px) rotate(-1deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
+
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: #10b981 }
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background-color: white;
+            border-radius: 50%;
+            animation: twinkle var(--duration, 3s) linear infinite;
+            animation-delay: var(--delay, 0s);
+        }
+
+        .astronaut {
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .earth-glow {
+            filter: drop-shadow(0 0 15px rgba(0, 150, 255, 0.5));
+        }
+
+        .typing-text {
+            overflow: hidden;
+            border-right: 3px solid #10b981;
+            white-space: nowrap;
+            margin: 0 auto;
+            letter-spacing: 0.1em;
+            animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+        }
+
+        body {
+            font-family: 'Space Mono', monospace;
+            background-color: #000;
+            background-image: url('https://i.redd.it/lv1xkebj73m71.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .nebula {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(30px);
+            opacity: 0.2;
+        }
+
+        .button-hover {
+            transition: all 0.3s ease;
+        }
+
+        .button-hover:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.7);
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center relative p-4">
+    <!-- Stars -->
+    <div id="stars" class="fixed top-0 left-0 w-full h-full pointer-events-none z-0"></div>
+
+    <!-- Nebula Effects -->
+    <div class="nebula bg-purple-500 w-64 h-64 top-1/4 right-1/4"></div>
+    <div class="nebula bg-blue-500 w-96 h-96 bottom-1/4 left-1/4"></div>
+
+    <!-- Content Container -->
+    <div class="container mx-auto relative z-10 flex flex-col items-center justify-center py-16 mt-8">
+        <!-- Astronaut Image -->
+        <div class="relative astronaut mb-12 mx-auto w-full max-w-lg">
+            <!-- Earth glow effect behind astronaut -->
+            <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-96 h-96 rounded-full bg-blue-500 opacity-20 earth-glow"></div>
+            
+            <!-- Astronaut PNG -->
+            <img src="https://pngimg.com/d/astronaut_PNG69.png" alt="Astronaut floating in space" class="astronaut mx-auto z-20 h-auto max-h-96">
+        </div>
+
+        <!-- Error Text -->
+        <div class="text-center max-w-2xl mx-auto px-4">
+            <h1 class="text-6xl md:text-8xl font-bold mb-8 text-white drop-shadow-lg">
+                <span class="text-red-500">4</span>
+                <span class="text-yellow-500">0</span>
+                <span class="text-green-500">4</span>
+            </h1>
+            
+            <div class="max-w-lg mx-auto">
+                <h2 class="text-xl md:text-3xl mb-6 typing-text">MISSION CONTROL HAS LOST CONTACT</h2>
+                <p class="text-lg md:text-xl mb-8 text-gray-300">It appears you've drifted into uncharted digital space. The page you were looking for has been lost in the cosmic void.</p>
+            </div>
+            
+            <!-- Return Button -->
+            <a href="/" class="button-hover inline-flex items-center px-8 py-4 bg-transparent border-2 border-green-500 text-green-400 rounded-lg font-bold text-lg transition-all">
+                <i class="ri-rocket-2-fill mr-3"></i>
+                Return to Earth
+            </a>
+        </div>
+
+        <!-- Mission Data -->
+        <div class="mt-16 bg-black bg-opacity-50 p-6 rounded-lg border border-gray-700 max-w-xl mx-auto">
+            <h3 class="text-xl font-mono font-bold mb-4 text-gray-300">MISSION DATA:</h3>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <p class="text-gray-500">STATUS:</p>
+                    <p class="text-red-500">DISCONNECTED</p>
+                </div>
+                <div>
+                    <p class="text-gray-500">ERROR CODE:</p>
+                    <p class="text-yellow-500">404</p>
+                </div>
+                <div>
+                    <p class="text-gray-500">LOCATION:</p>
+                    <p class="text-blue-400">UNKNOWN SECTOR</p>
+                </div>
+                <div>
+                    <p class="text-gray-500">OXYGEN LEVEL:</p>
+                    <div class="w-full bg-gray-700 rounded-full h-2.5">
+                        <div class="bg-green-500 h-2.5 rounded-full" style="width: 65%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Create stars
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 150; i++) {
+            const star = document.createElement('div');
+            star.classList.add('star');
+            
+            // Random position
+            const x = Math.random() * 100;
+            const y = Math.random() * 100;
+            star.style.left = `${x}%`;
+            star.style.top = `${y}%`;
+            
+            // Random animation duration and delay
+            const duration = 2 + Math.random() * 5;
+            const delay = Math.random() * 5;
+            star.style.setProperty('--duration', `${duration}s`);
+            star.style.setProperty('--delay', `${delay}s`);
+            
+            // Random size for stars
+            const size = 1 + Math.random() * 2;
+            star.style.width = `${size}px`;
+            star.style.height = `${size}px`;
+            
+            starsContainer.appendChild(star);
+        }
+    </script>
+</body>
+</html>
