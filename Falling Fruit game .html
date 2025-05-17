@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catch the Falling Emoji Game</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            overflow: hidden;
+            touch-action: manipulation;
+            user-select: none;
+        }
+        
+        #game-container {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #87CEEB, #1E90FF);
+        }
+        
+        .emoji {
+            position: absolute;
+            font-size: 2rem;
+            z-index: 10;
+        }
+        
+        #basket {
+            position: absolute;
+            bottom: 20px;
+            transform: translateX(-50%);
+            z-index: 20;
+            transition: left 0.1s ease;
+            font-size: 3.5rem;
+            filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.3));
+        }
+        
+        .game-ui {
+            position: absolute;
+            z-index: 30;
+        }
+        
+        #game-over {
+            display: none;
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 40;
+        }
+        
+        .heart {
+            display: inline-block;
+            color: red;
+            font-size: 1.5rem;
+            margin-right: 5px;
+        }
+        
+        .clouds {
+            position: absolute;
+            font-size: 3rem;
+            color: white;
+            opacity: 0.7;
+            z-index: 5;
+            animation: cloudMove linear infinite;
+        }
+        
+        @keyframes cloudMove {
+            0% { left: -10%; }
+            100% { left: 110%; }
+        }
+        
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            animation: particle 0.8s ease-out forwards;
+            z-index: 15;
+        }
+        
+        @keyframes particle {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+        }
+        
+        #mute-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 50;
+            font-size: 1.5rem;
+            color: white;
+            background-color: rgba(0,0,0,0.5);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-blue-100">
+    <div id="game-container" class="mx-auto w-full h-screen max-w-lg">
+        <!-- Score UI -->
+        <div class="game-ui top-2 left-4 text-white text-xl font-bold">
+            Score: <span id="score">0</span>
+        </div>
+        
+        <!-- Lives UI -->
+        <div id="lives" class="game-ui top-2 right-4 text-white text-xl font-bold">
+            <span class="heart">❤️</span>
+            <span class="heart">❤️</span>
+            <span class="heart">❤️</span>
+        </div>
+        
+        <!-- Level UI -->
+        <div class="game-ui top-10 left-4 text-white text-lg">
+            Level: <span id="level">1</span>
+        </div>
+        
+        <!-- Mute button -->
+        <div id="mute-button">🔊</div>
+        
+        <!-- Basket (player controlled) -->
+        <div id="basket">🧺</div>
+        
+        <!-- Game Over Screen -->
+        <div id="game-over" class="w-full h-full flex flex-col items-center justify-center text-white">
+            <h2 class="text-4xl font-bold mb-4">Game Over!</h2>
+            <p class="text-2xl mb-2">Final Score: <span id="final-score">0</span></p>
+            <p class="text-2xl mb-6">Level Reached: <span id="final-level">1</span></p>
+            <button id="restart-button" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg text-xl shadow-lg transform transition hover:scale-105">
+                Play Again
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Game elements
+            const gameContainer = document.getElementById('game-container');
+            const basket = document.getElementById('basket');
+            const scoreElement = document.getElementById('score');
+            const livesContainer = document.getElementById('lives');
+            const levelElement = document.getElementById('level');
+            const gameOverScreen = document.getElementById('game-over');
+            const finalScoreElement = document.getElementById('final-score');
+            const finalLevelElement = document.getElementById('final-level');
+            const restartButton = document.getElementById('restart-button');
+            const muteButton = document.getElementById('mute-button');
+            
+            // Game state
+            let score = 0;
+            let lives = 3;
+            let level = 1;
+            let gameActive = true;
+            let emojis = [];
+            let lastTimestamp = 0;
+            let spawnInterval = 1500; // milliseconds
+            let lastSpawnTime = 0;
+            let muted = false;
+            
+            // Container dimensions
+            const containerWidth = gameContainer.clientWidth;
+            const containerHeight = gameContainer.clientHeight;
+            
+            // Basket position
+            let basketX = containerWidth / 2;
+            basket.style.left = basketX + 'px';
+            const basketWidth = 60; // Approximate width of basket emoji
+            
+            // Available emojis with point values
+            const emojiTypes = [
+                { symbol: '🍎', points: 10, speed: 1 },
+                { symbol: '🍌', points: 15, speed: 1.2 },
+                { symbol: '🍒', points: 20, speed: 1.5 },
+                { symbol: '🍇', points: 25, speed: 1.7 },
+                { symbol: '🍉', points: 30, speed: 1.9 },
+                { symbol: '⭐', points: 50, speed: 2.2 },
+                { symbol: '💎', points: 100, speed: 2.5 },
+                { symbol: '💣', points: -50, speed: 1.8 } // Negative points
+            ];
+            
+            // Cloud elements for background
+            function createClouds() {
+                const cloudSymbols = ['☁️', '☁️', '☁️'];
+                
+                cloudSymbols.forEach((symbol, index) => {
+                    const cloud = document.createElement('div');
+                    cloud.className = 'clouds';
+                    cloud.textContent = symbol;
+                    cloud.style.top = `${10 + (index * 15)}%`;
+                    cloud.style.left = `${Math.random() * 100}%`;
+                    cloud.style.animationDuration = `${60 + Math.random() * 40}s`;
+                    gameContainer.appendChild(cloud);
+                });
+            }
+            
+            // Create sounds
+            const sounds = {
+                catch: new Audio('https://cdn.jsdelivr.net/gh/freeCodeCamp/cdn@main/build/testable-projects-fcc/audio/tic.mp3'),
+                miss: new Audio('https://cdn.jsdelivr.net/gh/freeCodeCamp/cdn@main/build/testable-projects-fcc/audio/clue.mp3'),
+                gameOver: new Audio('https://cdn.jsdelivr.net/gh/freeCodeCamp/cdn@main/build/testable-projects-fcc/audio/retro-game-over-long.mp3'),
+                levelUp: new Audio('https://cdn.jsdelivr.net/gh/freeCodeCamp/cdn@main/build/testable-projects-fcc/audio/retro-success.mp3')
+            };
+            
+            // Preload sounds
+            for (const sound in sounds) {
+                sounds[sound].load();
+                sounds[sound].volume = 0.3;
+            }
+            
+            // Play sound function
+            function playSound(soundName) {
+                if (!muted) {
+                    sounds[soundName].currentTime = 0;
+                    sounds[soundName].play().catch(err => console.log('Audio playback error:', err));
+                }
+            }
+            
+            // Handle mute button click
+            muteButton.addEventListener('click', () => {
+                muted = !muted;
+                muteButton.textContent = muted ? '🔇' : '🔊';
+            });
+            
+            // Create particle effects
+            function createParticles(x, y, emoji) {
+                const colors = ['#ffcc00', '#ff6b6b', '#48dbfb', '#1dd1a1', '#f368e0'];
+                const particleCount = 10;
+                
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.textContent = emoji;
+                    particle.style.left = `${x}px`;
+                    particle.style.top = `${y}px`;
+                    particle.style.fontSize = '1.2rem';
+                    
+                    // Random direction
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = 50 + Math.random() * 50;
+                    particle.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+                    particle.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+                    
+                    gameContainer.appendChild(particle);
+                    
+                    // Remove particle after animation completes
+                    setTimeout(() => {
+                        particle.remove();
+                    }, 800);
+                }
+            }
+            
+            // Create a falling emoji
+            function createEmoji() {
+                // Get random emoji type with weighted randomness
+                let emojiTypeIndex;
+                if (Math.random() < 0.15) {
+                    // 15% chance for special items (last 2 in the array)
+                    emojiTypeIndex = Math.floor(Math.random() * 2) + (emojiTypes.length - 2);
+                } else {
+                    // 85% chance for regular items
+                    emojiTypeIndex = Math.floor(Math.random() * (emojiTypes.length - 2));
+                }
+                
+                const emojiType = emojiTypes[emojiTypeIndex];
+                
+                const emoji = document.createElement('div');
+                emoji.className = 'emoji';
+                emoji.textContent = emojiType.symbol;
+                
+                // Random starting position
+                const emojiX = Math.random() * (containerWidth - 40) + 20;
+                const emojiY = -30;
+                
+                emoji.style.left = `${emojiX}px`;
+                emoji.style.top = `${emojiY}px`;
+                
+                // Add emoji object to array
+                const emojiObject = {
+                    element: emoji,
+                    x: emojiX,
+                    y: emojiY,
+                    speed: emojiType.speed * (1 + (level - 1) * 0.1), // Increase speed with level
+                    points: emojiType.points,
+                    symbol: emojiType.symbol,
+                    // Add slight horizontal movement
+                    horizontalDirection: Math.random() < 0.5 ? -1 : 1,
+                    horizontalSpeed: Math.random() * 0.5
+                };
+                
+                emojis.push(emojiObject);
+                gameContainer.appendChild(emoji);
+            }
+            
+            // Update emoji positions
+            function updateEmojis(timestamp) {
+                const deltaTime = timestamp - lastTimestamp;
+                lastTimestamp = timestamp;
+                
+                // Spawn new emoji if needed
+                if (timestamp - lastSpawnTime > spawnInterval) {
+                    createEmoji();
+                    lastSpawnTime = timestamp;
+                }
+                
+                // Update all emojis
+                for (let i = emojis.length - 1; i >= 0; i--) {
+                    const emoji = emojis[i];
+                    
+                    // Update position
+                    emoji.y += emoji.speed * (deltaTime / 16);
+                    emoji.x += emoji.horizontalDirection * emoji.horizontalSpeed * (deltaTime / 16);
+                    
+                    // Keep emoji within horizontal bounds
+                    if (emoji.x < 0 || emoji.x > containerWidth - 40) {
+                        emoji.horizontalDirection *= -1;
+                    }
+                    
+                    // Update element position
+                    emoji.element.style.top = `${emoji.y}px`;
+                    emoji.element.style.left = `${emoji.x}px`;
+                    
+                    // Check for collision with basket
+                    if (emoji.y > containerHeight - 70 && emoji.y < containerHeight - 10) {
+                        const emojiCenterX = emoji.x + 20; // Center of emoji
+                        
+                        if (emojiCenterX > basketX - basketWidth/1.2 && emojiCenterX < basketX + basketWidth/1.2) {
+                            // Caught emoji
+                            score += emoji.points;
+                            scoreElement.textContent = score;
+                            
+                            // Add visual effect
+                            createParticles(emoji.x, emoji.y, emoji.symbol);
+                            
+                            // Play sound
+                            if (emoji.points < 0) {
+                                playSound('miss');
+                            } else {
+                                playSound('catch');
+                            }
+                            
+                            // Remove emoji
+                            emoji.element.remove();
+                            emojis.splice(i, 1);
+                            
+                            // Check for level up
+                            checkLevelUp();
+                            
+                            continue;
+                        }
+                    }
+                    
+                    // Check if emoji has fallen beyond bottom
+                    if (emoji.y > containerHeight) {
+                        // Emoji missed
+                        if (emoji.points > 0) { // Only lose life if it's not a negative point emoji (bomb)
+                            lives--;
+                            updateLives();
+                            
+                            // Play miss sound
+                            playSound('miss');
+                            
+                            // Check game over
+                            if (lives <= 0) {
+                                endGame();
+                                break;
+                            }
+                        }
+                        
+                        // Remove emoji
+                        emoji.element.remove();
+                        emojis.splice(i, 1);
+                    }
+                }
+                
+                // Continue game loop
+                if (gameActive) {
+                    requestAnimationFrame(updateEmojis);
+                }
+            }
+            
+            // Update lives display
+            function updateLives() {
+                // Clear lives container
+                while (livesContainer.firstChild) {
+                    livesContainer.removeChild(livesContainer.firstChild);
+                }
+                
+                // Add heart for each life
+                for (let i = 0; i < lives; i++) {
+                    const heart = document.createElement('span');
+                    heart.className = 'heart';
+                    heart.textContent = '❤️';
+                    livesContainer.appendChild(heart);
+                }
+            }
+            
+            // Check for level up
+            function checkLevelUp() {
+                const scoreThreshold = level * 200;
+                if (score >= scoreThreshold) {
+                    level++;
+                    levelElement.textContent = level;
+                    finalLevelElement.textContent = level;
+                    
+                    // Speed up emoji spawning
+                    spawnInterval = Math.max(400, 1500 - (level - 1) * 150);
+                    
+                    // Level up effect
+                    gameContainer.classList.add('bg-yellow-300');
+                    setTimeout(() => {
+                        gameContainer.classList.remove('bg-yellow-300');
+                    }, 300);
+                    
+                    // Play level up sound
+                    playSound('levelUp');
+                }
+            }
+            
+            // Handle player input (mouse/touch)
+            function handleMouseMove(e) {
+                if (!gameActive) return;
+                
+                const rect = gameContainer.getBoundingClientRect();
+                basketX = Math.max(basketWidth/2, Math.min(containerWidth - basketWidth/2, e.clientX - rect.left));
+                basket.style.left = basketX + 'px';
+            }
+            
+            function handleTouchMove(e) {
+                if (!gameActive) return;
+                e.preventDefault();
+                
+                const rect = gameContainer.getBoundingClientRect();
+                const touch = e.touches[0];
+                basketX = Math.max(basketWidth/2, Math.min(containerWidth - basketWidth/2, touch.clientX - rect.left));
+                basket.style.left = basketX + 'px';
+            }
+            
+            // End game function
+            function endGame() {
+                gameActive = false;
+                
+                // Show game over screen
+                gameOverScreen.style.display = 'flex';
+                finalScoreElement.textContent = score;
+                finalLevelElement.textContent = level;
+                
+                // Play game over sound
+                playSound('gameOver');
+                
+                // Clear all emojis
+                emojis.forEach(emoji => {
+                    emoji.element.remove();
+                });
+                emojis = [];
+            }
+            
+            // Restart game function
+            function restartGame() {
+                score = 0;
+                lives = 3;
+                level = 1;
+                gameActive = true;
+                spawnInterval = 1500;
+                
+                // Update UI
+                scoreElement.textContent = score;
+                levelElement.textContent = level;
+                updateLives();
+                
+                // Hide game over screen
+                gameOverScreen.style.display = 'none';
+                
+                // Restart animation loop
+                lastTimestamp = performance.now();
+                requestAnimationFrame(updateEmojis);
+            }
+            
+            // Initialize game
+            function initGame() {
+                // Create clouds
+                createClouds();
+                
+                // Set up input handlers
+                gameContainer.addEventListener('mousemove', handleMouseMove);
+                gameContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
+                
+                // Set up restart button
+                restartButton.addEventListener('click', restartGame);
+                
+                // Start animation loop
+                lastTimestamp = performance.now();
+                requestAnimationFrame(updateEmojis);
+            }
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                // Update container dimensions
+                const newContainerWidth = gameContainer.clientWidth;
+                const newContainerHeight = gameContainer.clientHeight;
+                
+                // Adjust basket position
+                basketX = Math.min(basketX, newContainerWidth - basketWidth/2);
+                basket.style.left = basketX + 'px';
+            });
+            
+            // Initialize game on load
+            initGame();
+        });
+    </script>
+</body>
+</html>
