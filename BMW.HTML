@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BMW Hero Slider - Ultimate Driving Machine</title>
+  <link rel="stylesheet" href="https://public.codepenassets.com/css/normalize-5.0.0.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+/* Typography */
+@font-face {
+  font-family: "BMWHelvetica";
+  src: url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+}
+
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --btn-color: #1c69d4;
+  --car-color: #1c69d4;
+  --bckg-height: 300px;
+  --shadow-opacity: 0.2;
+  --car-shadow-height: 300px;
+}
+
+body {
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+  overflow-x: hidden;
+  font-family: "Inter", "Helvetica", "Arial", sans-serif;
+  color: #fff;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+}
+
+.container {
+  max-width: 1200px;
+  padding: 10px 20px;
+  margin: 0 auto;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Headers */
+h1 {
+  margin: 0;
+  font-size: 4.5rem;
+  line-height: 1;
+  font-family: "Inter", "Helvetica", "Arial", sans-serif;
+  letter-spacing: 0.9px;
+  font-weight: 700;
+  background: linear-gradient(45deg, #1c69d4, #ffffff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Button */
+.button {
+  position: relative;
+  height: 55px;
+  width: 200px;
+  background: none;
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 400;
+  text-align: center;
+  border: 2px solid var(--btn-color);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.button:hover {
+  background-color: var(--btn-color);
+  color: white;
+  box-shadow: 0 0 20px rgba(28, 105, 212, 0.5);
+}
+
+/* Header */
+.bmw-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30px 0;
+}
+
+.bmw-header__logo img {
+  height: 60px;
+  width: auto;
+}
+
+.bmw-header__nav {
+  display: flex;
+  gap: 30px;
+}
+
+.bmw-header__nav a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+.bmw-header__nav a:hover {
+  color: #1c69d4;
+}
+
+/* Main Content Layout */
+.bmw-main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: center;
+  flex: 1;
+  padding: 20px 0;
+}
+
+/* Slide Item */
+.bmw-slide {
+  position: relative;
+}
+
+.bmw-slide-aside {
+  z-index: 10;
+}
+
+.bmw-slide-aside__wholename {
+  margin-bottom: 20px;
+}
+
+.bmw-slide-aside__wholename span:first-child {
+  font-size: 2rem;
+  color: #1c69d4;
+  margin-right: 15px;
+}
+
+.bmw-slide-aside__name {
+  display: inline-block;
+  overflow: hidden;
+  height: 80px;
+}
+
+.bmw-slide-aside__name-part {
+  display: block;
+  transition: transform 0.5s ease-out;
+}
+
+.bmw-slide-aside__desc {
+  margin: 20px 0;
+  max-width: 420px;
+  height: 60px;
+  overflow: hidden;
+}
+
+.bmw-slide-aside__desc-text {
+  line-height: 1.5;
+  font-size: 1.1rem;
+  color: #e0e0e0;
+  transition: opacity 0.5s ease;
+}
+
+.bmw-slide-aside__button {
+  margin-top: 30px;
+}
+
+/* Car Image */
+.bmw-slide__img {
+  position: relative;
+  text-align: center;
+}
+
+.bmw-slide__img img {
+  max-width: 100%;
+  height: auto;
+  max-height: 400px;
+  object-fit: contain;
+  filter: drop-shadow(0 20px 40px rgba(28, 105, 212, 0.3));
+}
+
+/* Specifications */
+.bmw-slide-params {
+  grid-column: 1 / -1;
+  margin-top: 40px;
+}
+
+.bmw-slide-params__list {
+  display: flex;
+  justify-content: center;
+  gap: 80px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bmw-slide-params__item {
+  text-align: center;
+}
+
+.bmw-slide-params__value {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #1c69d4;
+  display: block;
+}
+
+.bmw-slide-params__suffix {
+  font-size: 1.2rem;
+  color: #fff;
+  margin-left: 5px;
+}
+
+.bmw-slide-params__name {
+  font-size: 0.9rem;
+  color: #b0b0b0;
+  margin-top: 5px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Navigation */
+.bmw-slider-navigation {
+  position: fixed;
+  right: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 100;
+}
+
+.bmw-slider-navigation__list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bmw-slider-navigation__item {
+  opacity: 0.6;
+  transition: opacity 0.3s;
+}
+
+.bmw-slider-navigation__item.active {
+  opacity: 1;
+}
+
+.bmw-slider-navigation__link {
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 10px;
+  display: block;
+  border-left: 3px solid transparent;
+  transition: all 0.3s;
+}
+
+.bmw-slider-navigation__link.active {
+  color: #1c69d4;
+  border-left-color: #1c69d4;
+}
+
+.bmw-slider-navigation__link:hover {
+  color: #1c69d4;
+}
+
+/* Animations */
+.slide-enter {
+  opacity: 0;
+  transform: translateX(-50px);
+}
+
+.slide-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 0.5s, transform 0.5s;
+}
+
+.slide-exit {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.slide-exit-active {
+  opacity: 0;
+  transform: translateX(50px);
+  transition: opacity 0.5s, transform 0.5s;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .bmw-main {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .bmw-slide-params__list {
+    gap: 40px;
+  }
+  
+  .bmw-slider-navigation {
+    position: relative;
+    right: auto;
+    top: auto;
+    transform: none;
+    margin-top: 30px;
+  }
+  
+  .bmw-slider-navigation__list {
+    flex-direction: row;
+    justify-content: center;
+  }
+  
+  h1 {
+    font-size: 3rem;
+  }
+}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="bmw-header">
+      <div class="bmw-header__logo">
+        <img src="https://images.seeklogo.com/logo-png/29/1/bmw-black-logo-png_seeklogo-299131.png" alt="BMW Logo">
+      </div>
+      <div class="bmw-header__nav">
+        <a href="#">Models</a>
+        <a href="#">Innovation</a>
+        <a href="#">Experience</a>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="bmw-main">
+      <!-- Slide Content -->
+      <div class="bmw-slide">
+        <div class="bmw-slide-aside">
+          <h1 class="bmw-slide-aside__wholename">
+            <span>BMW</span>
+            <div class="bmw-slide-aside__name">
+              <span class="bmw-slide-aside__name-part" id="carName">i8</span>
+            </div>
+          </h1>
+          
+          <div class="bmw-slide-aside__desc">
+            <p class="bmw-slide-aside__desc-text" id="carDesc">
+              Revolutionary hybrid sports car combining electric efficiency with breathtaking performance. The future of sustainable driving pleasure.
+            </p>
+          </div>
+          
+          <div class="bmw-slide-aside__button">
+            <button class="button">Configure Now</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Car Image -->
+      <div class="bmw-slide__img">
+        <img id="carImage" src="https://www.vhv.rs/dpng/d/606-6067527_bmw-i8-leasing-deals-bmw-i8-side-png.png" alt="BMW i8">
+      </div>
+
+      <!-- Specifications -->
+      <div class="bmw-slide-params">
+        <ul class="bmw-slide-params__list">
+          <li class="bmw-slide-params__item">
+            <span class="bmw-slide-params__value" id="topSpeed">155</span>
+            <span class="bmw-slide-params__suffix">mph</span>
+            <p class="bmw-slide-params__name">Top Speed</p>
+          </li>
+          <li class="bmw-slide-params__item">
+            <span class="bmw-slide-params__value" id="acceleration">4.2</span>
+            <span class="bmw-slide-params__suffix">s</span>
+            <p class="bmw-slide-params__name">0-60 mph</p>
+          </li>
+          <li class="bmw-slide-params__item">
+            <span class="bmw-slide-params__value" id="range">18</span>
+            <span class="bmw-slide-params__suffix" id="rangeSuffix">mi</span>
+            <p class="bmw-slide-params__name" id="rangeLabel">Electric Range</p>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="bmw-slider-navigation">
+      <ul class="bmw-slider-navigation__list">
+        <li class="bmw-slider-navigation__item active">
+          <a href="#" class="bmw-slider-navigation__link active" onclick="changeSlide(0)">i8</a>
+        </li>
+        <li class="bmw-slider-navigation__item">
+          <a href="#" class="bmw-slider-navigation__link" onclick="changeSlide(1)">X5</a>
+        </li>
+        <li class="bmw-slider-navigation__item">
+          <a href="#" class="bmw-slider-navigation__link" onclick="changeSlide(2)">M3</a>
+        </li>
+        <li class="bmw-slider-navigation__item">
+          <a href="#" class="bmw-slider-navigation__link" onclick="changeSlide(3)">7 Series</a>
+        </li>
+        <li class="bmw-slider-navigation__item">
+          <a href="#" class="bmw-slider-navigation__link" onclick="changeSlide(4)">iX</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    const bmwModels = [
+      {
+        name: "i8",
+        desc: "Revolutionary hybrid sports car combining electric efficiency with breathtaking performance. The future of sustainable driving pleasure.",
+        image: "https://www.vhv.rs/dpng/d/606-6067527_bmw-i8-leasing-deals-bmw-i8-side-png.png",
+        topSpeed: 155,
+        acceleration: 4.2,
+        range: 18,
+        rangeSuffix: "mi",
+        rangeLabel: "Electric Range",
+        color: "#1c69d4"
+      },
+      {
+        name: "X5",
+        desc: "Luxury meets versatility in this premium SUV. Advanced technology and commanding presence for every journey.",
+        image: "https://di-shared-assets.dealerinspire.com/legacy/rackspace/ldm-images/2021-BMW-X5-color-Jet-Black.png",
+        topSpeed: 155,
+        acceleration: 5.3,
+        range: 375,
+        rangeSuffix: "hp",
+        rangeLabel: "Power Output",
+        color: "#2563eb"
+      },
+      {
+        name: "M3",
+        desc: "Pure performance sedan engineered for the track, refined for the street. The ultimate expression of driving dynamics.",
+        image: "https://www.nicepng.com/png/detail/430-4308143_2018-bmw-m3-sedan-m3-2018-side-view.png",
+        topSpeed: 180,
+        acceleration: 3.9,
+        range: 510,
+        rangeSuffix: "hp",
+        rangeLabel: "Power Output",
+        color: "#dc2626"
+      },
+      {
+        name: "7 Series",
+        desc: "Flagship luxury sedan defining automotive excellence. Innovative technology meets unparalleled comfort and sophistication.",
+        image: "BMW-removebg-preview.png",
+        topSpeed: 155,
+        acceleration: 4.1,
+        range: 536,
+        rangeSuffix: "hp",
+        rangeLabel: "Power Output",
+        color: "#059669"
+      },
+      {
+        name: "iX",
+        desc: "Electric luxury SUV redefining sustainable mobility. Zero emissions, maximum comfort, and cutting-edge technology.",
+        image: "https://platform.cstatic-images.com/xlarge/in/v2/stock_photos/aa289914-9340-4a65-85de-e975129a2bcb/44ec59f6-0f80-4602-9c95-a5353e298bee.png",
+        topSpeed: 124,
+        acceleration: 4.4,
+        range: 324,
+        rangeSuffix: "mi",
+        rangeLabel: "Electric Range",
+        color: "#7c3aed"
+      }
+    ];
+
+    let currentSlide = 0;
+
+    function animateValue(element, start, end, duration, suffix = '') {
+      const startTime = performance.now();
+      const change = end - start;
+
+      function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+        const current = start + (change * easeOutQuart);
+        
+        element.textContent = Math.round(current * 10) / 10;
+        
+        if (progress < 1) {
+          requestAnimationFrame(update);
+        }
+      }
+      
+      requestAnimationFrame(update);
+    }
+
+    function changeSlide(index) {
+      if (index === currentSlide) return;
+      
+      currentSlide = index;
+      const model = bmwModels[index];
+      
+      // Update active navigation
+      document.querySelectorAll('.bmw-slider-navigation__link').forEach((link, i) => {
+        link.classList.toggle('active', i === index);
+      });
+      
+      document.querySelectorAll('.bmw-slider-navigation__item').forEach((item, i) => {
+        item.classList.toggle('active', i === index);
+      });
+      
+      // Update content with animations
+      const carName = document.getElementById('carName');
+      const carDesc = document.getElementById('carDesc');
+      const carImage = document.getElementById('carImage');
+      const topSpeed = document.getElementById('topSpeed');
+      const acceleration = document.getElementById('acceleration');
+      const range = document.getElementById('range');
+      const rangeSuffix = document.getElementById('rangeSuffix');
+      const rangeLabel = document.getElementById('rangeLabel');
+      
+      // Fade out and update content
+      carName.style.opacity = '0';
+      carDesc.style.opacity = '0';
+      carImage.style.opacity = '0';
+      
+      setTimeout(() => {
+        carName.textContent = model.name;
+        carDesc.textContent = model.desc;
+        carImage.src = model.image;
+        carImage.alt = `BMW ${model.name}`;
+        rangeSuffix.textContent = model.rangeSuffix;
+        rangeLabel.textContent = model.rangeLabel;
+        
+        // Update CSS variable for color
+        document.documentElement.style.setProperty('--btn-color', model.color);
+        document.documentElement.style.setProperty('--car-color', model.color);
+        
+        // Fade in
+        carName.style.opacity = '1';
+        carDesc.style.opacity = '1';
+        carImage.style.opacity = '1';
+        
+        // Animate numbers
+        const currentTopSpeed = parseInt(topSpeed.textContent) || 0;
+        const currentAcceleration = parseFloat(acceleration.textContent) || 0;
+        const currentRange = parseInt(range.textContent) || 0;
+        
+        animateValue(topSpeed, currentTopSpeed, model.topSpeed, 1000);
+        animateValue(acceleration, currentAcceleration, model.acceleration, 1200);
+        animateValue(range, currentRange, model.range, 1400);
+      }, 300);
+    }
+
+    // Auto-advance slides
+    let autoSlideInterval = setInterval(() => {
+      const nextSlide = (currentSlide + 1) % bmwModels.length;
+      changeSlide(nextSlide);
+    }, 5000);
+
+    // Pause auto-advance on interaction
+    document.querySelectorAll('.bmw-slider-navigation__link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        clearInterval(autoSlideInterval);
+        
+        // Resume after 10 seconds
+        setTimeout(() => {
+          autoSlideInterval = setInterval(() => {
+            const nextSlide = (currentSlide + 1) % bmwModels.length;
+            changeSlide(nextSlide);
+          }, 5000);
+        }, 10000);
+      });
+    });
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        const nextSlide = (currentSlide + 1) % bmwModels.length;
+        changeSlide(nextSlide);
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        const prevSlide = (currentSlide - 1 + bmwModels.length) % bmwModels.length;
+        changeSlide(prevSlide);
+      }
+    });
+
+    // Mouse wheel navigation
+    let wheelTimeout;
+    document.addEventListener('wheel', (e) => {
+      clearTimeout(wheelTimeout);
+      wheelTimeout = setTimeout(() => {
+        if (e.deltaY > 0) {
+          const nextSlide = (currentSlide + 1) % bmwModels.length;
+          changeSlide(nextSlide);
+        } else if (e.deltaY < 0) {
+          const prevSlide = (currentSlide - 1 + bmwModels.length) % bmwModels.length;
+          changeSlide(prevSlide);
+        }
+      }, 100);
+    });
+  </script>
+</body>
+</html>
