@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rock Paper Scissors Advanced</title>
+  <!-- Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css">
+  <!-- Google Fonts -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/inter@3.3.1/latin.css">
+  <style>
+    body { font-family: 'Inter Variable', inter, sans-serif; }
+    .choice:hover, .choice:focus {
+      transform: scale(1.09) rotate(-6deg);
+      filter: brightness(1.05);
+      transition: transform 0.16s, filter 0.16s;
+      z-index:2
+    }
+    .animate-fadein {
+      animation: fadeIn 0.4s;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px);}
+      to { opacity: 1; transform:translateY(0);}
+    }
+    .winner-glow {
+      box-shadow: 0 0 18px 4px #51e267b8;
+    }
+    .loser-glow {
+      box-shadow: 0 0 18px 4px #ec5479c5;
+    }
+    .draw-glow {
+      box-shadow: 0 0 15px 3px #b2b2b2b0!important;
+    }
+    .btn-gradient {
+      background: linear-gradient(94deg, #63e6be 0%, #7081fa 100%);
+      color: white;
+      border-radius: 9999px;
+      box-shadow: 0 15px 25px -7px #7a7af56c;
+      transition: transform 0.15s, box-shadow 0.18s;
+      font-weight: 700;
+    }
+    .btn-gradient:hover { transform: scale(1.04) translateY(-1px); }
+    .split-fade {
+      animation: splitFade 0.35s;
+    }
+    @keyframes splitFade {
+      from { opacity:0; transform:scale(0.5) rotate(-30deg);}
+      to { opacity:1; transform:scale(1) rotate(0);}
+    }
+    /* Hide scrollbars for "modal" overlays */
+    ::-webkit-scrollbar { width: 0 }
+    .glass {
+      background: rgba(255,255,255,0.17);
+      box-shadow:0 6px 32px 0 rgba(20,40,120,0.07);
+      backdrop-filter: blur(6px);
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-indigo-100 to-teal-100 min-h-screen flex items-center justify-center px-2">
+  <div class="w-full max-w-xl mx-auto py-10">
+    <div id="game-container" class="relative">
+      <!-- Screens will be injected here -->
+    </div>
+  </div>
+  <script>
+    // =========== CONFIG & DATA =============
+    const choices = [
+      { id: 'rock', icon: 'fa-hand-fist', color: 'bg-blue-300', label:'Rock' },
+      { id: 'paper', icon: 'fa-hand', color: 'bg-green-200', label:'Paper' },
+      { id: 'scissors', icon: 'fa-hand-scissors', color: 'bg-pink-200', label:'Scissors' },
+    ];
+    const winMap = { rock: 'scissors', paper: 'rock', scissors: 'paper' };
+
+    // =========== STATE =====================
+    let mode = null; // 'single', 'two'
+    let aiDifficulty = 'normal'; // 'easy', 'normal', 'hard'
+    let playerScore = 0, computerScore = 0, draws = 0, round = 1;
+    let p1Score = 0, p2Score = 0;
+    let p1Selection = null, p2Selection = null;
+    let lastPlayerChoices = []; // For 'hard' mode AI: remembers last N picks
+    let twoPlayerTurn = 1; // 1 or 2
+
+    // =========== UTILITIES =============
+    function shuffleArray(a) {
+      for (let i = a.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+    }
+    function pickRandom(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    // ======= COMPUTER AI LOGIC ==========
+
+    function getComputerChoice() {
+      if (aiDifficulty === 'easy') {
+        // 65% chance for player to win, else random.
+        let r = Math.random();
+        if (r < 0.65) {
+          // Computer picks the choice that LOSSES to player's last choice
+          let last = lastPlayerChoices.slice(-1)[0];
+          if (last) {
+            // Let computer choose the hand that loses to what player last chose
+            return winMap[last];
+          }
+        }
+        return pickRandom(['rock', 'paper', 'scissors']);
+      }
+      if (aiDifficulty === 'hard') {
+        // Analyze player's history. If player has a bias, counter it.
+        if (lastPlayerChoices.length >= 3) {
+          // Count past 5 choices
+          let counts = { rock:0, paper:0, scissors:0};
+          lastPlayerChoices.slice(-5).forEach(ch => counts[ch]++);
+          let most = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0];
+          // Computer picks the one that BEATS the most picked
+          return getBeatingChoice(most);
+        } else {
+          return pickRandom(['rock','paper','scissors']);
+        }
+      }
+      // Normal = random
+      return pickRandom(['rock','paper','scissors']);
+    }
+    function getBeatingChoice(choice) {
+      // What beats 'choice' in RPS?
+      for (let key in winMap) {
+        if (winMap[key] === choice) return key;
+      }
+      // Should not reach here
+      return pickRandom(['rock','paper','scissors']);
+    }
+
+    // =========== RENDER SCREENS =============
+
+    function renderModeSelection() {
+      document.getElementById('game-container').innerHTML = `
+        <div class="p-8 pb-12 bg-white rounded-2xl glass shadow-xl flex flex-col align-center justify-center items-center animate-fadein">
+          <h1 class="text-3xl font-bold text-blue-900 mb-2">Rock Paper Scissors</h1>
+          <h2 class="text-xl font-medium text-blue-700 mb-10">Select Game Mode</h2>
+          <div class="flex flex-row gap-6 mb-7">
+            <button onclick="selectMode('single')" class="btn-gradient px-8 py-3 text-lg shadow-xl focus:outline-none">
+              <i class="fas fa-laptop mr-2"></i>Single Player
+            </button>
+            <button onclick="selectMode('two')" class="btn-gradient px-8 py-3 text-lg bg-pink-400 shadow-xl focus:outline-none">
+              <i class="fas fa-users mr-2"></i>Two Player
+            </button>
+          </div>
+          <p class="text-gray-600 text-sm mt-3">Created with ❤️ by Genspark</p>
+        </div>
+      `;
+    }
+
+    function renderDifficultySelection() {
+      document.getElementById('game-container').innerHTML = `
+        <div class="p-8 pb-12 bg-white rounded-2xl glass shadow-xl flex flex-col items-center justify-center animate-fadein">
+          <h2 class="text-2xl font-bold mb-4 text-indigo-900">Select Difficulty</h2>
+          <div class="flex flex-row gap-6 mt-2 mb-7">
+            <button onclick="selectDifficulty('easy')" class="btn-gradient px-8 py-3 text-lg"><i class="fa fa-child mr-2"></i>Easy</button>
+            <button onclick="selectDifficulty('normal')" class="btn-gradient px-8 py-3 text-lg bg-pink-400"><i class="fa fa-brain mr-2"></i>Normal</button>
+            <button onclick="selectDifficulty('hard')" class="btn-gradient px-8 py-3 text-lg bg-red-400"><i class="fa fa-bolt mr-2"></i>Hard</button>
+          </div>
+          <div class="rounded-xl p-4 bg-gray-50 border border-blue-100 text-sm text-gray-700 max-w-md">
+            <p class="mb-2"><b>Easy:</b> Computer lets you win more often.</p>
+            <p class="mb-2"><b>Normal:</b> Computer is random.</p>
+            <p><b>Hard:</b> Computer studies your pattern to try to beat you!</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // Main game UI for single/multiplayer
+    function renderGameBoard() {
+      let isTwo = mode === 'two';
+      let p1 = isTwo ? `Player 1` : `You`;
+      let p2 = isTwo ? 'Player 2' : 'Computer';
+      let turnText = '';
+      if (isTwo) {
+        turnText = `<div class="mb-1 text-sm text-blue-500"><span class="font-medium">${(twoPlayerTurn === 1) ? 'Player 1' : 'Player 2'}'s turn</span></div>`
+      }
+      // Scoreboard
+      document.getElementById('game-container').innerHTML = `
+        <div class="bg-white rounded-2xl glass p-6 pt-8 pb-10 shadow-xl animate-fadein">
+          <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-3">
+            <h2 class="text-2xl font-bold text-blue-900 mb-2 md:mb-0">
+              Rock Paper Scissors
+              <span class="ml-2 text-base font-medium text-indigo-500">${isTwo ? "Two Player" : capitalize(aiDifficulty) + " AI"}</span>
+            </h2>
+            <div class="flex flex-row space-x-3 self-end text-gray-700">
+              <button onclick="resetScores()" class="text-blue-500 hover:underline focus:outline-none"><i class="fa fa-arrow-rotate-left mr-1"></i>Reset Score</button>
+              <button onclick="backToMenu()" class="text-gray-500 hover:text-red-400 ml-2 focus:outline-none"><i class="fa fa-house mr-1"></i>Menu</button>
+            </div>
+          </div>
+          <div class="flex flex-row items-center justify-center gap-7 mb-5">
+            <div class="text-center">
+              <div class="text-sm font-medium text-blue-700"><i class="fa fa-user mr-1"></i>${p1}</div>
+              <div id="score-p1" class="text-3xl font-bold">${isTwo ? p1Score : playerScore}</div>
+            </div>
+            <div class="w-2 h-14 rounded-full bg-gradient-to-b from-blue-200 to-indigo-100 mx-2"></div>
+            <div class="text-center">
+              <div class="text-sm font-medium text-pink-600"><i class="fa fa-laptop mr-1"></i>${p2}</div>
+              <div id="score-p2" class="text-3xl font-bold">${isTwo ? p2Score : computerScore}</div>
+            </div>
+            <div class="text-center ml-5">
+              <div class="text-xs font-medium text-gray-500">Draws</div>
+              <div id="score-draws" class="text-lg font-bold">${draws}</div>
+            </div>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full text-center mb-3">${turnText}</div>
+            <div id="choices-row" class="flex flex-row justify-center gap-7 mb-2">
+              ${choices.map(c => `
+                <button class="choice transition-transform duration-150 rounded-full p-1 ${c.color} bg-opacity-70 shadow-lg text-5xl focus:outline-none split-fade" style="transition: box-shadow 0.22s;"
+                  onclick="handleChoice('${c.id}')"
+                  aria-label="${c.label}"
+                >
+                  <i class="fa-solid ${c.icon}"></i>
+                </button>
+              `).join('')}
+            </div>
+            <div class="flex flex-row justify-center items-center gap-6 w-full mt-4">
+              <span id="current-round" class="px-3 rounded text-sm bg-blue-50 text-blue-700 shadow">Round ${round}</span>
+              <span id="message-bar" class="text-base font-semibold animate-fadein"></span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Renders choices/results split
+    function renderResult({ player, computer, result, isTwo, p1, p2 }) {
+      let choiceData = id => choices.find(ch => ch.id === id);
+
+      let left = isTwo ? p1 : player;
+      let right = isTwo ? p2 : computer;
+
+      let leftChoice = choiceData(left), rightChoice = choiceData(right);
+
+      // Winner highlight
+      let lClass='', rClass='';
+      if (result==='draw') {
+        lClass=rClass = "draw-glow";
+      } else if ((result==='win'&&!isTwo)||(isTwo&&result==='p1')) {
+        lClass="winner-glow"; rClass="loser-glow";
+      } else {
+        lClass="loser-glow"; rClass="winner-glow";
+      }
+      // Announce
+      let announceText = '';
+      if (isTwo) {
+        if (result==='draw') announceText = 'It\'s a Draw!';
+        else if (result==='p1') announceText = 'Player 1 Wins!';
+        else announceText = 'Player 2 Wins!';
+      } else {
+        if (result==='win') announceText = 'You Win!';
+        else if (result==='lose') announceText = 'You Lose!';
+        else announceText = 'It\'s a Draw!';
+      }
+
+      document.getElementById('choices-row').innerHTML = `
+        <div class="flex flex-row items-center justify-center gap-12 w-full animate-fadein">
+          <div class="flex flex-col items-center">
+            <div class="split-fade rounded-full p-2 ${leftChoice.color} text-7xl shadow-xl ${lClass}"><i class="fa-solid ${leftChoice.icon}"></i></div>
+            <div class="mt-2 text-base font-medium">${isTwo?'Player 1':'You'}</div>
+          </div>
+          <div class="text-3xl font-black text-gray-500 split-fade">VS</div>
+          <div class="flex flex-col items-center">
+            <div class="split-fade rounded-full p-2 ${rightChoice.color} text-7xl shadow-xl ${rClass}"><i class="fa-solid ${rightChoice.icon}"></i></div>
+            <div class="mt-2 text-base font-medium">${isTwo?'Player 2':'Computer'}</div>
+          </div>
+        </div>
+      `;
+      document.getElementById('message-bar').innerHTML = `<span class="${result==='win'||result==='p1'?'text-green-700': (result==='lose'||result==='p2')?'text-pink-700':'text-gray-800'} text-lg font-bold" style="letter-spacing:0.03em">${announceText}</span>
+        <button class="ml-4 btn-gradient py-1 px-4 text-base focus:outline-none border border-blue-200 border-opacity-20" onclick="nextRound()" style="border-radius:99px!important">
+          <i class="fa fa-arrow-right mr-1"></i>Next
+        </button>
+      `;
+    }
+
+    // ============== GAME FLOW =============
+
+    function selectMode(selected) {
+      mode = selected;
+      aiDifficulty = 'normal';
+      playerScore = computerScore = p1Score = p2Score = draws = round = 0;
+      lastPlayerChoices = [];
+      if (mode === 'single') {
+        renderDifficultySelection();
+      } else {
+        renderGameBoard();
+      }
+    }
+    function selectDifficulty(diff) {
+      aiDifficulty = diff;
+      playerScore = computerScore = draws = round = 0;
+      lastPlayerChoices = [];
+      renderGameBoard();
+    }
+    // Handles a move
+    function handleChoice(playerPick) {
+      if (mode==='single') {
+        // Save for AI (hard/analysis)
+        lastPlayerChoices.push(playerPick);
+        if (lastPlayerChoices.length > 12) lastPlayerChoices = lastPlayerChoices.slice(-12);
+        const computerPick = getComputerChoice();
+        setTimeout(() => {
+          let res = judge(playerPick, computerPick);
+          if (res==='win') playerScore++;
+          else if (res==='lose') computerScore++;
+          else draws++;
+          renderResult({ player: playerPick, computer: computerPick, result: res, isTwo: false });
+          updateScores();
+        }, 200);
+      } else {
+        if (twoPlayerTurn===1) {
+          p1Selection = playerPick;
+          twoPlayerTurn = 2;
+          // Hide choices, ask p2 to pick (privacy!)
+          renderGameBoard();
+          document.getElementById('message-bar').innerHTML =
+            `<span class="text-indigo-700 font-semibold text-lg">Player 2, make your pick!</span>`;
+        } else {
+          p2Selection = playerPick;
+          // Judge
+          let res = judge(p1Selection, p2Selection);
+          if (res==='draw') draws++;
+          else if (res==='win') p1Score++;
+          else p2Score++;
+          renderResult({ p1: p1Selection, p2: p2Selection, result:(res==='draw'?'draw':res==='win'?'p1':'p2'), isTwo: true });
+          updateScores();
+          twoPlayerTurn = 1; p1Selection = p2Selection = null;
+        }
+      }
+    }
+    // Main win/loss/draw calculation
+    function judge(a, b) {
+      if (a === b) return 'draw';
+      if (winMap[a] === b) return 'win';
+      return 'lose';
+    }
+    function nextRound() {
+      round++;
+      renderGameBoard();
+    }
+    function updateScores() {
+      if (mode==='two') {
+        document.getElementById('score-p1').textContent = p1Score;
+        document.getElementById('score-p2').textContent = p2Score;
+      } else {
+        document.getElementById('score-p1').textContent = playerScore;
+        document.getElementById('score-p2').textContent = computerScore;
+      }
+      document.getElementById('score-draws').textContent = draws;
+      document.getElementById('current-round').textContent = "Round " + round;
+    }
+    function resetScores() {
+      if (mode==='two') {
+        p1Score=0; p2Score=0; draws=0; round=1; p1Selection=p2Selection=null; twoPlayerTurn=1;
+      } else {
+        playerScore=0; computerScore=0; draws=0; round=1; lastPlayerChoices=[];
+      }
+      renderGameBoard();
+    }
+    function backToMenu() {
+      mode = null;
+      aiDifficulty = 'normal';
+      round = 1;
+      playerScore = computerScore = p1Score = p2Score = draws = 0;
+      p1Selection = p2Selection = null;
+      twoPlayerTurn = 1;
+      lastPlayerChoices=[];
+      renderModeSelection();
+    }
+    function capitalize(w) { return w[0].toUpperCase()+w.slice(1); }
+
+    // ========== INIT ===========
+    window.selectMode = selectMode;
+    window.selectDifficulty = selectDifficulty;
+    window.handleChoice = handleChoice;
+    window.nextRound = nextRound;
+    window.resetScores = resetScores;
+    window.backToMenu = backToMenu;
+
+    renderModeSelection();
+  </script>
+</body>
+</html>
+

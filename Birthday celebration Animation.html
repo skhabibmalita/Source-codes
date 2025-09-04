@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Birthday Celebration</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --cake-base: #f9d3da;
+            --cake-frosting: #fff3f5;
+            --cake-accent: #ff8cba;
+            --candle-color: #ffeb3b;
+            --flame-color: #ff9800;
+        }
+        
+        body {
+            background: #081d2b;
+            overflow: hidden;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        .container {
+            position: relative;
+            height: 100vh;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .cake-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            transform: scale(0);
+            transform-origin: center bottom;
+        }
+        
+        .cake {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 280px;
+            height: 200px;
+        }
+        
+        .cake-base {
+            position: absolute;
+            width: 280px;
+            height: 100px;
+            bottom: 10px;
+            left: 0;
+            background: var(--cake-base);
+            border-radius: 10px 10px 5px 5px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        
+        .cake-middle {
+            position: absolute;
+            width: 240px;
+            height: 70px;
+            bottom: 110px;
+            left: 20px;
+            background: var(--cake-frosting);
+            border-radius: 5px 5px 0 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .cake-top {
+            position: absolute;
+            width: 180px;
+            height: 50px;
+            bottom: 180px;
+            left: 50px;
+            background: var(--cake-base);
+            border-radius: 5px 5px 0 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .frosting {
+            position: absolute;
+            background: var(--cake-frosting);
+            border-radius: 50%;
+        }
+        
+        .candle {
+            position: absolute;
+            width: 10px;
+            height: 30px;
+            background: linear-gradient(to top, #ff5252, #ff8a80);
+            z-index: 1;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .flame {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 18px;
+            background: #ff9800;
+            border-radius: 50% 50% 20% 20%;
+            box-shadow: 0 0 10px #ff9800, 0 0 20px #ff9800;
+            animation: flicker 0.5s infinite alternate;
+        }
+        
+        @keyframes flicker {
+            0%, 100% {
+                transform: translateX(-50%) scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: translateX(-50%) scale(0.9);
+                opacity: 0.8;
+            }
+        }
+        
+        .decoration {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: var(--cake-accent);
+        }
+        
+        .happy-birthday {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(255,255,255,0.7);
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        .celebrate-button {
+            margin-top: 50px;
+            padding: 15px 30px;
+            background: linear-gradient(45deg, #FF416C, #FF4B2B);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            outline: none;
+            box-shadow: 0 5px 20px rgba(255, 65, 108, 0.4);
+            position: relative;
+            overflow: hidden;
+            z-index: 10;
+        }
+        
+        .celebrate-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 65, 108, 0.5);
+        }
+        
+        .celebrate-button:active {
+            transform: translateY(-1px);
+        }
+        
+        .celebrate-again {
+            margin-top: 20px;
+            background: transparent;
+            border: 2px solid #FF416C;
+            color: #FF416C;
+            display: none;
+        }
+        
+        .celebrate-again:hover {
+            background: rgba(255, 65, 108, 0.1);
+        }
+        
+        .popper {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            transform: rotate(45deg);
+            opacity: 0;
+        }
+        
+        .popper-left {
+            left: 10%;
+            bottom: 20%;
+        }
+        
+        .popper-right {
+            right: 10%;
+            bottom: 20%;
+        }
+        
+        .popper-body {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #3a7bd5, #3a6073);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .confetti-piece {
+            position: absolute;
+            width: 10px;
+            height: 30px;
+            background: #f9d423;
+            top: 0;
+            opacity: 0;
+        }
+        
+        #confetti-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .balloons-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .balloon {
+            position: absolute;
+            width: 45px;
+            height: 60px;
+            border-radius: 50%;
+            bottom: -100px;
+            opacity: 0;
+        }
+        
+        .balloon::before {
+            content: '';
+            position: absolute;
+            width: 2px;
+            height: 80px;
+            background: rgba(255,255,255,0.7);
+            bottom: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .glitter {
+            position: absolute;
+            background: white;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            box-shadow: 0 0 10px white, 0 0 20px white;
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Happy Birthday Text -->
+        <h1 class="happy-birthday">HAPPY BIRTHDAY!</h1>
+        
+        <!-- Cake Container -->
+        <div class="cake-container">
+            <div class="cake">
+                <div class="cake-base"></div>
+                <div class="cake-middle"></div>
+                <div class="cake-top"></div>
+                
+                <!-- Decorations will be added via JS -->
+            </div>
+        </div>
+        
+        <!-- Party Poppers -->
+        <div class="popper popper-left">
+            <div class="popper-body"></div>
+        </div>
+        <div class="popper popper-right">
+            <div class="popper-body"></div>
+        </div>
+        
+        <!-- Confetti Container -->
+        <div id="confetti-container"></div>
+        
+        <!-- Balloons Container -->
+        <div class="balloons-container"></div>
+        
+        <!-- Buttons -->
+        <button class="celebrate-button" id="celebrate-btn">CELEBRATE!</button>
+        <button class="celebrate-button celebrate-again" id="celebrate-again-btn">Celebrate Again</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const celebrateBtn = document.getElementById('celebrate-btn');
+            const celebrateAgainBtn = document.getElementById('celebrate-again-btn');
+            const happyBirthday = document.querySelector('.happy-birthday');
+            const cakeContainer = document.querySelector('.cake-container');
+            const popperLeft = document.querySelector('.popper-left');
+            const popperRight = document.querySelector('.popper-right');
+            
+            // Add candles to cake
+            function addCandles() {
+                const cake = document.querySelector('.cake');
+                const candlePositions = [
+                    { left: '50%', bottom: '230px' },
+                    { left: '30%', bottom: '230px' },
+                    { left: '70%', bottom: '230px' },
+                    { left: '20%', bottom: '230px' },
+                    { left: '80%', bottom: '230px' }
+                ];
+                
+                candlePositions.forEach((pos, index) => {
+                    const candle = document.createElement('div');
+                    candle.className = 'candle';
+                    candle.style.left = pos.left;
+                    candle.style.bottom = pos.bottom;
+                    candle.style.transform = 'translateX(-50%)';
+                    
+                    const flame = document.createElement('div');
+                    flame.className = 'flame';
+                    // Slightly different flicker for each candle
+                    flame.style.animationDelay = `${index * 0.1}s`;
+                    
+                    candle.appendChild(flame);
+                    cake.appendChild(candle);
+                });
+            }
+            
+            // Add frosting decorations
+            function addFrosting() {
+                const cake = document.querySelector('.cake');
+                const frostingPositions = [
+                    // Bottom layer frosting
+                    ...Array(15).fill().map((_, i) => ({ 
+                        left: `${10 + i * 18}px`, 
+                        bottom: '100px', 
+                        size: '20px' 
+                    })),
+                    // Middle layer frosting
+                    ...Array(12).fill().map((_, i) => ({ 
+                        left: `${30 + i * 18}px`, 
+                        bottom: '170px', 
+                        size: '18px' 
+                    })),
+                    // Top layer frosting
+                    ...Array(8).fill().map((_, i) => ({ 
+                        left: `${60 + i * 18}px`, 
+                        bottom: '220px', 
+                        size: '16px' 
+                    }))
+                ];
+                
+                frostingPositions.forEach(pos => {
+                    const frosting = document.createElement('div');
+                    frosting.className = 'frosting';
+                    frosting.style.left = pos.left;
+                    frosting.style.bottom = pos.bottom;
+                    frosting.style.width = pos.size;
+                    frosting.style.height = pos.size;
+                    cake.appendChild(frosting);
+                });
+            }
+            
+            // Add decorative elements to cake
+            function addDecorations() {
+                const cake = document.querySelector('.cake');
+                const decorationPositions = [
+                    { left: '20%', bottom: '50px' },
+                    { left: '40%', bottom: '70px' },
+                    { left: '60%', bottom: '40px' },
+                    { left: '80%', bottom: '60px' },
+                    { left: '30%', bottom: '140px' },
+                    { left: '50%', bottom: '150px' },
+                    { left: '70%', bottom: '130px' },
+                    { left: '40%', bottom: '200px' },
+                    { left: '60%', bottom: '190px' }
+                ];
+                
+                const colors = ['#FF5252', '#FF4081', '#7C4DFF', '#536DFE', '#448AFF', '#40C4FF', '#64FFDA'];
+                
+                decorationPositions.forEach(pos => {
+                    const decoration = document.createElement('div');
+                    decoration.className = 'decoration';
+                    decoration.style.left = pos.left;
+                    decoration.style.bottom = pos.bottom;
+                    decoration.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    cake.appendChild(decoration);
+                });
+            }
+            
+            // Add balloons
+            function addBalloons() {
+                const balloonsContainer = document.querySelector('.balloons-container');
+                const colors = ['#FF5252', '#FF4081', '#7C4DFF', '#536DFE', '#448AFF', '#40C4FF', '#64FFDA'];
+                
+                for (let i = 0; i < 15; i++) {
+                    const balloon = document.createElement('div');
+                    balloon.className = 'balloon';
+                    balloon.style.left = `${Math.random() * 90 + 5}%`;
+                    balloon.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    
+                    balloonsContainer.appendChild(balloon);
+                }
+            }
+            
+            // Add glitter/sparkle effects
+            function addGlitter() {
+                const container = document.querySelector('.container');
+                
+                for (let i = 0; i < 50; i++) {
+                    const glitter = document.createElement('div');
+                    glitter.className = 'glitter';
+                    glitter.style.left = `${Math.random() * 100}%`;
+                    glitter.style.top = `${Math.random() * 100}%`;
+                    
+                    container.appendChild(glitter);
+                }
+            }
+            
+            // Launch confetti
+            function launchConfetti() {
+                const duration = 6 * 1000;
+                const end = Date.now() + duration;
+                
+                (function frame() {
+                    confetti({
+                        particleCount: 3,
+                        angle: 60,
+                        spread: 55,
+                        origin: { x: 0, y: 0.7 },
+                        colors: ['#FF5252', '#FF4081', '#7C4DFF', '#536DFE', '#448AFF']
+                    });
+                    
+                    confetti({
+                        particleCount: 3,
+                        angle: 120,
+                        spread: 55,
+                        origin: { x: 1, y: 0.7 },
+                        colors: ['#40C4FF', '#64FFDA', '#FFFF00', '#FF9800', '#FF5722']
+                    });
+                    
+                    if (Date.now() < end) {
+                        requestAnimationFrame(frame);
+                    }
+                }());
+            }
+            
+            // Animate the party poppers
+            function animatePoppers() {
+                gsap.to(popperLeft, {
+                    opacity: 1,
+                    duration: 0.5,
+                    onComplete: () => {
+                        // First popper explosion
+                        confetti({
+                            particleCount: 80,
+                            angle: 60,
+                            spread: 70,
+                            origin: { x: 0.1, y: 0.8 },
+                            gravity: 1.2,
+                            scalar: 1.5
+                        });
+                    }
+                });
+                
+                gsap.to(popperRight, {
+                    opacity: 1,
+                    duration: 0.5,
+                    delay: 0.3,
+                    onComplete: () => {
+                        // Second popper explosion
+                        confetti({
+                            particleCount: 80,
+                            angle: 120,
+                            spread: 70,
+                            origin: { x: 0.9, y: 0.8 },
+                            gravity: 1.2,
+                            scalar: 1.5
+                        });
+                    }
+                });
+            }
+            
+            // Animate balloons
+            function animateBalloons() {
+                const balloons = document.querySelectorAll('.balloon');
+                
+                balloons.forEach((balloon, index) => {
+                    gsap.to(balloon, {
+                        y: `-${Math.random() * 300 + 400}px`,
+                        x: Math.random() * 100 - 50,
+                        opacity: 1,
+                        duration: Math.random() * 3 + 4,
+                        delay: Math.random() * 3,
+                        ease: "power1.out",
+                    });
+                });
+            }
+            
+            // Animate glitter
+            function animateGlitter() {
+                const glitters = document.querySelectorAll('.glitter');
+                
+                glitters.forEach((glitter, index) => {
+                    gsap.to(glitter, {
+                        opacity: Math.random() * 0.7 + 0.3,
+                        duration: Math.random() * 1 + 0.5,
+                        repeat: -1,
+                        yoyo: true,
+                        delay: Math.random() * 2
+                    });
+                });
+            }
+            
+            // Main celebration animation sequence
+            function startCelebration() {
+                celebrateBtn.style.display = 'none';
+                
+                // Reveal the cake with a bounce effect
+                gsap.to(cakeContainer, {
+                    scale: 1,
+                    duration: 1.5,
+                    ease: "elastic.out(1, 0.5)",
+                    onComplete: () => {
+                        // Launch party poppers
+                        animatePoppers();
+                        
+                        // Show the happy birthday text
+                        gsap.to(happyBirthday, {
+                            opacity: 1,
+                            y: 0,
+                            duration: 1,
+                            ease: "back.out(1.7)",
+                        });
+                        
+                        // Launch confetti
+                        launchConfetti();
+                        
+                        // Animate balloons
+                        animateBalloons();
+                        
+                        // Show celebrate again button
+                        setTimeout(() => {
+                            celebrateAgainBtn.style.display = 'block';
+                        }, 3000);
+                    }
+                });
+                
+                // Animate glitter effects
+                animateGlitter();
+            }
+            
+            // Reset the celebration
+            function resetCelebration() {
+                // Hide elements
+                gsap.set(cakeContainer, { scale: 0 });
+                gsap.set(happyBirthday, { opacity: 0, y: 20 });
+                gsap.set(popperLeft, { opacity: 0 });
+                gsap.set(popperRight, { opacity: 0 });
+                
+                // Remove existing candles and decorations
+                document.querySelectorAll('.candle, .frosting, .decoration').forEach(el => el.remove());
+                document.querySelectorAll('.balloon').forEach(el => el.remove());
+                document.querySelectorAll('.glitter').forEach(el => el.remove());
+                
+                // Hide and show buttons
+                celebrateAgainBtn.style.display = 'none';
+                celebrateBtn.style.display = 'block';
+                
+                // Re-add elements
+                addCandles();
+                addFrosting();
+                addDecorations();
+                addBalloons();
+                addGlitter();
+            }
+            
+            // Initialize elements
+            function init() {
+                addCandles();
+                addFrosting();
+                addDecorations();
+                addBalloons();
+                addGlitter();
+                
+                // Set initial states
+                gsap.set(cakeContainer, { scale: 0 });
+                gsap.set(happyBirthday, { opacity: 0, y: 20 });
+                gsap.set(popperLeft, { opacity: 0 });
+                gsap.set(popperRight, { opacity: 0 });
+                
+                // Add event listeners
+                celebrateBtn.addEventListener('click', startCelebration);
+                celebrateAgainBtn.addEventListener('click', resetCelebration);
+            }
+            
+            // Start initialization
+            init();
+        });
+    </script>
+</body>
+</html>

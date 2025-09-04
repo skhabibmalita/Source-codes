@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Cards with Hover Animations</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s ease;
+            position: relative;
+            height: 400px;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+
+        .card:hover {
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+            transform: translateY(-10px);
+        }
+
+        .card-image-container {
+            height: 200px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+
+        .card:hover .card-image {
+            transform: scale(1.15);
+        }
+
+        .card-content {
+            padding: 1.5rem;
+            position: relative;
+            background: white;
+            transform: translateY(0);
+            transition: transform 0.5s ease;
+        }
+
+        .card:hover .card-content {
+            transform: translateY(-20px);
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #2d3748;
+            transition: color 0.3s ease;
+        }
+
+        .card:hover .card-title {
+            color: #4c51bf;
+        }
+
+        .card-description {
+            color: #718096;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+            opacity: 0.9;
+            transition: opacity 0.3s ease;
+        }
+
+        .card:hover .card-description {
+            opacity: 1;
+        }
+
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            color: #a0aec0;
+            font-size: 0.875rem;
+        }
+
+        .card-button {
+            display: inline-block;
+            padding: 0.5rem 1.25rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-weight: 600;
+            border-radius: 30px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .card:hover .card-button {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .card-button:hover {
+            background: linear-gradient(135deg, #764ba2, #667eea);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .card-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background-color: rgba(237, 100, 166, 0.9);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            z-index: 10;
+            transform: scale(0);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover .card-badge {
+            transform: scale(1);
+        }
+
+        .card-icon {
+            margin-right: 0.5rem;
+            color: #667eea;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover .card-icon {
+            transform: scale(1.2);
+        }
+
+        .card-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card:hover .card-overlay {
+            opacity: 1;
+        }
+
+        .card-hidden-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 1.5rem;
+            background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
+            color: white;
+            transform: translateY(100%);
+            transition: transform 0.4s ease;
+        }
+
+        .card:hover .card-hidden-content {
+            transform: translateY(0);
+        }
+
+        .card.featured {
+            border-top: 4px solid #4c51bf;
+        }
+
+        .card.featured::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            transition: border-color 0.4s ease;
+            z-index: -1;
+        }
+
+        .card.featured:hover::before {
+            border-color: #4c51bf;
+        }
+
+        .shine-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, 
+                rgba(255,255,255,0) 0%, 
+                rgba(255,255,255,0.03) 40%, 
+                rgba(255,255,255,0.1) 50%, 
+                rgba(255,255,255,0.03) 60%, 
+                rgba(255,255,255,0) 100%);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .card:hover .shine-effect {
+            transform: translateX(100%);
+        }
+
+        @media (max-width: 768px) {
+            .cards-container {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 1.5rem;
+            }
+            
+            .card {
+                height: 380px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .cards-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .card {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="text-center">
+            <h1 class="text-4xl font-bold text-indigo-800 mb-4">Interactive Card Collection</h1>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">Hover over the cards to see various animations and effects. The cards are responsive and adapt to different screen sizes.</p>
+        </header>
+
+        <div class="cards-container">
+            <!-- Card 1 -->
+            <div class="card js-tilt" data-tilt data-tilt-max="10" data-tilt-speed="400" data-tilt-perspective="1000">
+                <div class="card-badge">Popular</div>
+                <div class="card-image-container">
+                    <img src="https://images.unsplash.com/photo-1519681393784-d120267933ba" alt="Mountain Landscape" class="card-image">
+                    <div class="card-overlay"></div>
+                </div>
+                <div class="card-content">
+                    <h2 class="card-title">Mountain Retreat</h2>
+                    <p class="card-description">Experience the breathtaking views of mountain landscapes and find peace in nature's embrace.</p>
+                    <div class="card-meta">
+                        <span><i class="fas fa-map-marker-alt card-icon"></i>Alps</span>
+                        <span><i class="fas fa-star card-icon"></i>4.9</span>
+                    </div>
+                    <a href="#" class="card-button">Explore More</a>
+                </div>
+                <div class="card-hidden-content">
+                    <p>Discover hidden trails and serene lakes</p>
+                </div>
+                <div class="shine-effect"></div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="card featured js-tilt" data-tilt data-tilt-max="10" data-tilt-speed="400" data-tilt-perspective="1000">
+                <div class="card-badge">Featured</div>
+                <div class="card-image-container">
+                    <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e" alt="Tropical Beach" class="card-image">
+                    <div class="card-overlay"></div>
+                </div>
+                <div class="card-content">
+                    <h2 class="card-title">Tropical Paradise</h2>
+                    <p class="card-description">White sandy beaches, crystal clear waters, and palm trees swaying in the gentle breeze.</p>
+                    <div class="card-meta">
+                        <span><i class="fas fa-map-marker-alt card-icon"></i>Maldives</span>
+                        <span><i class="fas fa-star card-icon"></i>4.8</span>
+                    </div>
+                    <a href="#" class="card-button">Explore More</a>
+                </div>
+                <div class="card-hidden-content">
+                    <p>Snorkel among vibrant coral reefs</p>
+                </div>
+                <div class="shine-effect"></div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="card js-tilt" data-tilt data-tilt-max="10" data-tilt-speed="400" data-tilt-perspective="1000">
+                <div class="card-image-container">
+                    <img src="forest.jpg" alt="Forest Trail" class="card-image">
+                    <div class="card-overlay"></div>
+                </div>
+                <div class="card-content">
+                    <h2 class="card-title">Forest Adventure</h2>
+                    <p class="card-description">Explore ancient woodlands and discover the hidden wonders of flora and fauna.</p>
+                    <div class="card-meta">
+                        <span><i class="fas fa-map-marker-alt card-icon"></i>Redwood</span>
+                        <span><i class="fas fa-star card-icon"></i>4.7</span>
+                    </div>
+                    <a href="#" class="card-button">Explore More</a>
+                </div>
+                <div class="card-hidden-content">
+                    <p>Home to trees over 2,000 years old</p>
+                </div>
+                <div class="shine-effect"></div>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="card js-tilt" data-tilt data-tilt-max="10" data-tilt-speed="400" data-tilt-perspective="1000">
+                <div class="card-badge">New</div>
+                <div class="card-image-container">
+                    <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c" alt="Urban Cityscape" class="card-image">
+                    <div class="card-overlay"></div>
+                </div>
+                <div class="card-content">
+                    <h2 class="card-title">Urban Exploration</h2>
+                    <p class="card-description">Discover the pulse of metropolitan life with stunning architecture and cultural experiences.</p>
+                    <div class="card-meta">
+                        <span><i class="fas fa-map-marker-alt card-icon"></i>Tokyo</span>
+                        <span><i class="fas fa-star card-icon"></i>4.6</span>
+                    </div>
+                    <a href="#" class="card-button">Explore More</a>
+                </div>
+                <div class="card-hidden-content">
+                    <p>Experience nightlife in the bustling districts</p>
+                </div>
+                <div class="shine-effect"></div>
+            </div>
+
+            <!-- Card 5 -->
+            <div class="card featured js-tilt" data-tilt data-tilt-max="10" data-tilt-speed="400" data-tilt-perspective="1000">
+                <div class="card-image-container">
+                    <img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1" alt="Desert Sunset" class="card-image">
+                    <div class="card-overlay"></div>
+                </div>
+                <div class="card-content">
+                    <h2 class="card-title">Desert Expedition</h2>
+                    <p class="card-description">Marvel at the vast sandy landscapes and experience the magic of desert sunsets.</p>
+                    <div class="card-meta">
+                        <span><i class="fas fa-map-marker-alt card-icon"></i>Sahara</span>
+                        <span><i class="fas fa-star card-icon"></i>4.9</span>
+                    </div>
+                    <a href="#" class="card-button">Explore More</a>
+                </div>
+                <div class="card-hidden-content">
+                    <p>Camp under the stars in luxury tents</p>
+                </div>
+                <div class="shine-effect"></div>
+            </div>
+
+            <!-- Card 6 -->
+            <div class="card js-tilt" data-tilt data-tilt-max="10" data-tilt-speed="400" data-tilt-perspective="1000">
+                <div class="card-badge">Popular</div>
+                <div class="card-image-container">
+                    <img src="https://images.unsplash.com/photo-1502786129293-79981df4e689" alt="Countryside" class="card-image">
+                    <div class="card-overlay"></div>
+                </div>
+                <div class="card-content">
+                    <h2 class="card-title">Rural Getaway</h2>
+                    <p class="card-description">Escape to the countryside with rolling hills, farmhouses, and authentic local experiences.</p>
+                    <div class="card-meta">
+                        <span><i class="fas fa-map-marker-alt card-icon"></i>Tuscany</span>
+                        <span><i class="fas fa-star card-icon"></i>4.7</span>
+                    </div>
+                    <a href="#" class="card-button">Explore More</a>
+                </div>
+                <div class="card-hidden-content">
+                    <p>Taste wines from local vineyards</p>
+                </div>
+                <div class="shine-effect"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vanilla Tilt.js for 3D hover effect -->
+    <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.8.0/dist/vanilla-tilt.min.js"></script>
+    <script>
+        // Initialize Vanilla Tilt for all cards
+        VanillaTilt.init(document.querySelectorAll(".js-tilt"), {
+            max: 15,
+            speed: 400,
+            glare: true,
+            "max-glare": 0.2,
+        });
+
+        // Additional hover effects
+        document.querySelectorAll('.card').forEach(card => {
+            // Mouse enter animation enhancement
+            card.addEventListener('mouseenter', function() {
+                this.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            });
+
+            // Mouse leave animation smoothing
+            card.addEventListener('mouseleave', function() {
+                this.style.transition = 'all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1)';
+            });
+
+            // Click effect
+            card.addEventListener('click', function(e) {
+                // Create ripple effect
+                let ripple = document.createElement('div');
+                ripple.className = 'ripple-effect';
+                
+                let rect = this.getBoundingClientRect();
+                let x = e.clientX - rect.left;
+                let y = e.clientY - rect.top;
+                
+                ripple.style.cssText = `
+                    position: absolute;
+                    background: rgba(255,255,255,0.7);
+                    border-radius: 50%;
+                    pointer-events: none;
+                    width: 10px;
+                    height: 10px;
+                    top: ${y}px;
+                    left: ${x}px;
+                    transform: translate(-50%, -50%);
+                    animation: ripple 0.6s linear;
+                `;
+                
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+
+        // Add keyframe animation for ripple effect
+        document.head.insertAdjacentHTML('beforeend', `
+            <style>
+                @keyframes ripple {
+                    0% {
+                        width: 0px;
+                        height: 0px;
+                        opacity: 0.5;
+                    }
+                    100% {
+                        width: 500px;
+                        height: 500px;
+                        opacity: 0;
+                    }
+                }
+            </style>
+        `);
+    </script>
+</body>
+</html>

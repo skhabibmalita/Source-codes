@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Credit Card Payment UI</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.2/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --card-color: #553c9a;
+            --card-gradient: linear-gradient(135deg, #553c9a, #ee4b2b);
+            --input-bg: rgba(255, 255, 255, 0.1);
+            --success-color: #10b981;
+            --error-color: #ef4444;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1f2937, #111827);
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .card-container {
+            perspective: 1000px;
+            width: 100%;
+            max-width: 400px;
+            height: 220px;
+        }
+
+        .card {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+            background: var(--card-gradient);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            background: var(--card-gradient);
+        }
+
+        .magnetic-stripe {
+            background-color: #2d2d2d;
+            height: 40px;
+            margin: 20px 0;
+        }
+
+        .cvv-container {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            position: relative;
+        }
+
+        .cvv-band {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            width: 80%;
+            text-align: right;
+            font-family: monospace;
+            position: relative;
+        }
+
+        .cvv-value {
+            position: absolute;
+            right: 10px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .card-chip {
+            width: 50px;
+            height: 35px;
+            background: linear-gradient(135deg, #ffe57f, #ffae00);
+            border-radius: 5px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-chip::before, .card-chip::after {
+            content: '';
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .card-chip::before {
+            width: 70%;
+            height: 45%;
+            top: 10%;
+            left: 15%;
+        }
+
+        .card-chip::after {
+            width: 70%;
+            height: 20%;
+            bottom: 10%;
+            left: 15%;
+        }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .form-input {
+            background: var(--input-bg);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+
+        .form-input:focus {
+            border-color: rgba(255, 255, 255, 0.5);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+        }
+
+        .input-container {
+            position: relative;
+        }
+
+        .validation-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: none;
+        }
+
+        .validation-icon.valid {
+            color: var(--success-color);
+            display: block;
+        }
+
+        .validation-icon.invalid {
+            color: var(--error-color);
+            display: block;
+        }
+
+        .pay-button {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .pay-button:hover {
+            background: linear-gradient(135deg, #4f46e5, #4338ca);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(79, 70, 229, 0.3);
+        }
+
+        .pay-button:active {
+            transform: translateY(0);
+        }
+
+        .loader {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+            margin-left: 8px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .card-number {
+            display: flex;
+            justify-content: space-between;
+            font-family: monospace;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+        }
+
+        .card-info {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .card-number, .card-holder, .card-expiry {
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Card Entry Animation */
+        @keyframes cardEntrance {
+            0% {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .animate-card {
+            animation: cardEntrance 0.8s ease-out forwards;
+        }
+
+        /* Form Entry Animation */
+        @keyframes formEntrance {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-form {
+            animation: formEntrance 0.6s ease-out forwards;
+            animation-delay: 0.3s;
+            opacity: 0;
+        }
+
+        /* Success Animation */
+        @keyframes successPulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            }
+        }
+
+        .success-animation {
+            animation: successPulse 1.5s infinite;
+        }
+    </style>
+</head>
+<body class="flex justify-center items-center p-4 md:p-6">
+    <div class="w-full max-w-lg">
+        <h1 class="text-3xl md:text-4xl font-bold text-white text-center mb-8">Payment Details</h1>
+
+        <div class="card-container mx-auto mb-8 animate-card">
+            <div class="card" id="card">
+                <!-- Front of the card -->
+                <div class="card-face card-front">
+                    <div class="flex justify-between">
+                        <div class="card-chip"></div>
+                        <div class="text-white text-xl font-bold">VISA</div>
+                    </div>
+                    <div class="card-number text-white">
+                        <span id="firstBlock">XXXX</span>
+                        <span id="secondBlock">XXXX</span>
+                        <span id="thirdBlock">XXXX</span>
+                        <span id="fourthBlock">XXXX</span>
+                    </div>
+                    <div class="card-info">
+                        <div>
+                            <div class="text-gray-300 text-xs uppercase">Card Holder</div>
+                            <div class="card-holder text-white text-base" id="cardHolderDisplay">YOUR NAME</div>
+                        </div>
+                        <div>
+                            <div class="text-gray-300 text-xs uppercase">Expires</div>
+                            <div class="card-expiry text-white text-base" id="expiryDisplay">MM/YY</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Back of the card -->
+                <div class="card-face card-back">
+                    <div class="magnetic-stripe"></div>
+                    <div class="cvv-container">
+                        <div class="text-xs text-white mr-2">CVV</div>
+                        <div class="cvv-band">
+                            <div class="cvv-value" id="cvvDisplay">XXX</div>
+                        </div>
+                    </div>
+                    <div class="text-white text-xl font-bold mt-4 text-right">VISA</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-container p-6 animate-form">
+            <form id="payment-form" class="space-y-6">
+                <div class="input-container">
+                    <label for="cardHolder" class="block text-white mb-2">Card Holder</label>
+                    <input type="text" id="cardHolder" class="form-input w-full p-3" placeholder="Enter your full name">
+                    <i class="fas fa-check validation-icon" id="nameValidIcon"></i>
+                    <i class="fas fa-times validation-icon" id="nameInvalidIcon"></i>
+                </div>
+
+                <div class="input-container">
+                    <label for="cardNumber" class="block text-white mb-2">Card Number</label>
+                    <input type="text" id="cardNumber" class="form-input w-full p-3" placeholder="XXXX XXXX XXXX XXXX" maxlength="19">
+                    <i class="fas fa-check validation-icon" id="numberValidIcon"></i>
+                    <i class="fas fa-times validation-icon" id="numberInvalidIcon"></i>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="input-container">
+                        <label for="expiryDate" class="block text-white mb-2">Expiry Date</label>
+                        <input type="text" id="expiryDate" class="form-input w-full p-3" placeholder="MM/YY" maxlength="5">
+                        <i class="fas fa-check validation-icon" id="expiryValidIcon"></i>
+                        <i class="fas fa-times validation-icon" id="expiryInvalidIcon"></i>
+                    </div>
+                    <div class="input-container">
+                        <label for="cvv" class="block text-white mb-2">CVV</label>
+                        <input type="text" id="cvv" class="form-input w-full p-3" placeholder="XXX" maxlength="3">
+                        <i class="fas fa-check validation-icon" id="cvvValidIcon"></i>
+                        <i class="fas fa-times validation-icon" id="cvvInvalidIcon"></i>
+                    </div>
+                </div>
+
+                <button type="submit" class="pay-button w-full mt-6">
+                    <span>Pay Now</span>
+                    <div class="loader" id="paymentLoader"></div>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const card = document.getElementById('card');
+            const cvvInput = document.getElementById('cvv');
+            const cardNumberInput = document.getElementById('cardNumber');
+            const cardHolderInput = document.getElementById('cardHolder');
+            const expiryDateInput = document.getElementById('expiryDate');
+            const paymentForm = document.getElementById('payment-form');
+            const paymentLoader = document.getElementById('paymentLoader');
+
+            // Card number display elements
+            const firstBlock = document.getElementById('firstBlock');
+            const secondBlock = document.getElementById('secondBlock');
+            const thirdBlock = document.getElementById('thirdBlock');
+            const fourthBlock = document.getElementById('fourthBlock');
+            const cardHolderDisplay = document.getElementById('cardHolderDisplay');
+            const expiryDisplay = document.getElementById('expiryDisplay');
+            const cvvDisplay = document.getElementById('cvvDisplay');
+
+            // Validation icons
+            const nameValidIcon = document.getElementById('nameValidIcon');
+            const nameInvalidIcon = document.getElementById('nameInvalidIcon');
+            const numberValidIcon = document.getElementById('numberValidIcon');
+            const numberInvalidIcon = document.getElementById('numberInvalidIcon');
+            const expiryValidIcon = document.getElementById('expiryValidIcon');
+            const expiryInvalidIcon = document.getElementById('expiryInvalidIcon');
+            const cvvValidIcon = document.getElementById('cvvValidIcon');
+            const cvvInvalidIcon = document.getElementById('cvvInvalidIcon');
+
+            // Flip card when focusing on CVV
+            cvvInput.addEventListener('focus', function() {
+                card.classList.add('flipped');
+            });
+
+            // Flip back when focus is lost
+            cvvInput.addEventListener('blur', function() {
+                card.classList.remove('flipped');
+            });
+
+            // Update card number as typing
+            cardNumberInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                let formattedValue = '';
+                
+                // Add space after every 4 digits
+                for (let i = 0; i < value.length; i++) {
+                    if (i > 0 && i % 4 === 0) {
+                        formattedValue += ' ';
+                    }
+                    formattedValue += value[i];
+                }
+                
+                e.target.value = formattedValue;
+                
+                // Update card display
+                const blocks = formattedValue.split(' ');
+                firstBlock.textContent = blocks[0] || 'XXXX';
+                secondBlock.textContent = blocks[1] || 'XXXX';
+                thirdBlock.textContent = blocks[2] || 'XXXX';
+                fourthBlock.textContent = blocks[3] || 'XXXX';
+                
+                // Validate (basic check - must be 16 digits)
+                const digits = value.length;
+                if (digits === 16) {
+                    numberValidIcon.style.display = 'block';
+                    numberInvalidIcon.style.display = 'none';
+                } else if (digits > 0) {
+                    numberValidIcon.style.display = 'none';
+                    numberInvalidIcon.style.display = 'block';
+                } else {
+                    numberValidIcon.style.display = 'none';
+                    numberInvalidIcon.style.display = 'none';
+                }
+            });
+
+            // Update card holder name
+            cardHolderInput.addEventListener('input', function(e) {
+                const value = e.target.value;
+                cardHolderDisplay.textContent = value || 'YOUR NAME';
+                
+                // Validate (basic check - at least 3 characters)
+                if (value.length >= 3) {
+                    nameValidIcon.style.display = 'block';
+                    nameInvalidIcon.style.display = 'none';
+                } else if (value.length > 0) {
+                    nameValidIcon.style.display = 'none';
+                    nameInvalidIcon.style.display = 'block';
+                } else {
+                    nameValidIcon.style.display = 'none';
+                    nameInvalidIcon.style.display = 'none';
+                }
+            });
+
+            // Format and update expiry date
+            expiryDateInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                
+                // Format as MM/YY
+                if (value.length > 0) {
+                    let month = value.substring(0, 2);
+                    const year = value.substring(2, 4);
+                    
+                    // Validate month (01-12)
+                    if (month.length === 1 && parseInt(month) > 1) {
+                        month = '0' + month;
+                    }
+                    if (parseInt(month) > 12) {
+                        month = '12';
+                    }
+                    
+                    if (month) {
+                        value = month;
+                        if (year) {
+                            value += '/' + year;
+                        }
+                    }
+                }
+                
+                e.target.value = value;
+                expiryDisplay.textContent = value || 'MM/YY';
+                
+                // Validate (basic check - must be in MM/YY format)
+                const isValid = /^\d{2}\/\d{2}$/.test(value);
+                if (isValid) {
+                    expiryValidIcon.style.display = 'block';
+                    expiryInvalidIcon.style.display = 'none';
+                } else if (value.length > 0) {
+                    expiryValidIcon.style.display = 'none';
+                    expiryInvalidIcon.style.display = 'block';
+                } else {
+                    expiryValidIcon.style.display = 'none';
+                    expiryInvalidIcon.style.display = 'none';
+                }
+            });
+
+            // Format and update CVV
+            cvvInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                e.target.value = value;
+                cvvDisplay.textContent = value || 'XXX';
+                
+                // Validate (basic check - must be 3 digits)
+                if (value.length === 3) {
+                    cvvValidIcon.style.display = 'block';
+                    cvvInvalidIcon.style.display = 'none';
+                } else if (value.length > 0) {
+                    cvvValidIcon.style.display = 'none';
+                    cvvInvalidIcon.style.display = 'block';
+                } else {
+                    cvvValidIcon.style.display = 'none';
+                    cvvInvalidIcon.style.display = 'none';
+                }
+            });
+
+            // Form submission with loading animation
+            paymentForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Show loader
+                const payButton = document.querySelector('.pay-button span');
+                payButton.textContent = 'Processing';
+                paymentLoader.style.display = 'block';
+                
+                // Simulate payment processing
+                setTimeout(function() {
+                    payButton.textContent = 'Payment Successful';
+                    paymentLoader.style.display = 'none';
+                    document.querySelector('.pay-button').classList.add('success-animation');
+                    document.querySelector('.pay-button').style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                }, 2000);
+            });
+        });
+    </script>
+</body>
+</html>

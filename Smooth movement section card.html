@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Air Jordan Showcase</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Google Fonts Open Sans-->
+  <link href="https://cdn.jsdelivr.net/npm/@fontsource/open-sans@4.5.14/index.min.css" rel="stylesheet">
+  <!-- Tailwind CSS v2.2.19 -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    *, *:before, *:after { box-sizing: border-box; margin: 0; padding: 0;}
+
+    body {
+      background: #1f1f1f;
+      font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+    }
+    .cont {
+      position: relative;
+      overflow: hidden;
+      height: 100vh;
+      padding: 80px 70px;
+    }
+    .cont__inner {
+      position: relative;
+      height: 100%;
+    }
+    .cont__inner:hover .el__bg:after {
+      opacity: 1;
+    }
+    .el {
+      position: absolute;
+      left: 0; top: 0;
+      width: 19.2%;
+      height: 100%;
+      background: #252525;
+      transition: transform 0.6s 0.7s, width 0.7s, opacity 0.6s 0.7s, z-index 0s 1.3s;
+      will-change: transform, width, opacity;
+    }
+    .el:not(.s--active) { cursor: pointer; }
+    .el__overflow { overflow: hidden; position: relative; height: 100%; }
+    .el__inner {
+      overflow: hidden; position: relative; height: 100%;
+      transition: transform 1s;
+    }
+    .cont.s--inactive .el__inner {
+      transform: translate3d(0, 100%, 0);
+    }
+    .el__bg {
+      position: relative;
+      width: calc(100vw - 140px);
+      height: 100%;
+      transition: transform 0.6s 0.7s;
+      will-change: transform;
+    }
+    .el__bg:before {
+      content: "";
+      position: absolute;
+      left: 0; top: -5%;
+      width: 100%; height: 110%;
+      background-size: cover;
+      background-position: center center;
+      transition: transform 1s;
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    .cont.s--inactive .el__bg:before {
+      transform: translate3d(0, -100%, 0) scale(1.2);
+    }
+    .el.s--active .el__bg:before {
+      transition: transform 0.8s;
+    }
+    .el__bg:after {
+      content: "";
+      z-index: 1;
+      position: absolute; left: 0; top: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.3);
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+    .cont.s--el-active .el__bg:after {
+      transition: opacity 0.5s 1.4s; opacity: 1 !important;
+    }
+    .el__preview-cont {
+      z-index: 2;
+      display: flex; justify-content: center; align-items: center;
+      position: absolute; left: 0; top: 0;
+      width: 100%; height: 100%;
+      transition: all 0.3s 1.2s;
+    }
+    .cont.s--inactive .el__preview-cont {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    .cont.s--el-active .el__preview-cont {
+      opacity: 0; transform: translateY(30px); transition: all 0.5s;
+    }
+    .el__heading {
+      color: #fff; text-transform: uppercase; font-size: 18px;
+    }
+    .el__content {
+      z-index: -1;
+      position: absolute; left: 0; top: 0;
+      width: 100%; height: 100%;
+      padding: 30px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.1s;
+    }
+    .el.s--active .el__content {
+      z-index: 2;
+      opacity: 1;
+      pointer-events: auto;
+      transition: all 0.5s 1.4s;
+    }
+    .el__text {
+      text-transform: uppercase;
+      font-size: 40px;
+      color: #fff;
+    }
+    .el__close-btn {
+      z-index: -1;
+      position: absolute; right: 10px; top: 10px;
+      width: 60px; height: 60px;
+      opacity: 0; pointer-events: none;
+      transition: all 0s 0.45s;
+      cursor: pointer;
+    }
+    .el.s--active .el__close-btn {
+      z-index: 5; opacity: 1; pointer-events: auto; transition: all 0s 1.4s;
+    }
+    .el__close-btn:before, .el__close-btn:after {
+      content: ""; position: absolute; left: 0; top: 50%;
+      width: 100%; height: 8px;
+      margin-top: -4px;
+      background: #fff;
+      opacity: 0; transition: opacity 0s;
+    }
+    .el.s--active .el__close-btn:before, .el.s--active .el__close-btn:after {
+      opacity: 1;
+    }
+    .el__close-btn:before {
+      transform: rotate(45deg) translateX(100%);
+    }
+    .el.s--active .el__close-btn:before {
+      transition: all 0.3s 1.4s cubic-bezier(0.72,0.09,0.32,1.57);
+      transform: rotate(45deg) translateX(0);
+    }
+    .el__close-btn:after {
+      transform: rotate(-45deg) translateX(100%);
+    }
+    .el.s--active .el__close-btn:after {
+      transition: all 0.3s 1.55s cubic-bezier(0.72,0.09,0.32,1.57);
+      transform: rotate(-45deg) translateX(0);
+    }
+    .el__index {
+      overflow: hidden;
+      position: absolute;
+      left: 0; bottom: -80px;
+      width: 100%; height: 100%; min-height: 250px;
+      text-align: center; font-size: 20vw; line-height: 0.85; font-weight: bold;
+      transition: transform 0.5s, opacity 0.3s 1.4s;
+      transform: translate3d(0,1vw,0);
+    }
+    .el:hover .el__index { transform: translate3d(0,0,0);}
+    .cont.s--el-active .el__index {transition:transform 0.5s,opacity 0.3s;opacity:0;}
+    .el__index-back, .el__index-front {
+      position: absolute; left: 0; bottom: 0; width: 100%;
+    }
+    .el__index-back {
+      color: #2f3840;
+      opacity: 0;
+      transition: opacity 0.25s 0.25s;
+    }
+    .el:hover .el__index-back {transition: opacity 0.25s;opacity:1;}
+    .el__index-overlay {
+      overflow: hidden; position: relative;
+      transform: translate3d(0,100%,0);
+      transition: transform 0.5s 0.1s;
+      color: transparent;
+    }
+    .el__index-overlay:before {
+      content: attr(data-index);
+      position: absolute; left: 0; bottom: 0; width: 100%; height: 100%;
+      color: #fff;
+      transform: translate3d(0,-100%,0);
+      transition: transform 0.5s 0.1s;
+    }
+    .el:hover .el__index-overlay { transform: translate3d(0,0,0); }
+    .el:hover .el__index-overlay:before {transform: translate3d(0,0,0);}
+    .el:nth-child(1) { transform: translate3d(0%,0,0); transform-origin:50% 50%;}
+    .cont.s--el-active .el:nth-child(1):not(.s--active) {
+      transform: scale(0.5) translate3d(0%,0,0); opacity: 0; transition:transform 0.95s,opacity 0.95s;
+    }
+    .el:nth-child(1) .el__inner {transition-delay:0s;}
+    .el:nth-child(1) .el__bg { transform: translate3d(0%,0,0);}
+    .el:nth-child(1) .el__bg:before {
+      transition-delay: 0s;
+      background-image: url("https://m.media-amazon.com/images/I/61Bvn33eRSL._AC_UY900_.jpg"); /* AJ 1 High OG White/Black */
+    }
+    .el:nth-child(2) { transform: translate3d(105.2083333333%,0,0); transform-origin:155.2083333333% 50%;}
+    .cont.s--el-active .el:nth-child(2):not(.s--active) {
+      transform: scale(0.5) translate3d(105.2083333333%,0,0);opacity:0;transition:transform 0.95s,opacity 0.95s;
+    }
+    .el:nth-child(2) .el__inner{transition-delay:0.1s;}
+    .el:nth-child(2) .el__bg { transform: translate3d(-19.2%,0,0);}
+    .el:nth-child(2) .el__bg:before {
+      transition-delay: 0.1s;
+      background-image: url("https://static.nike.com/a/images/t_PDP_936_v1/f_auto,q_auto:eco,u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/67bfe496-7894-4c53-a514-b8234ecc2c3b/AIR+JORDAN+3+RETRO.png"); /* AJ 3 Retro Lucky Shorts */
+    }
+    .el:nth-child(3) { transform: translate3d(210.4166666667%,0,0); transform-origin:260.4166666667% 50%;}
+    .cont.s--el-active .el:nth-child(3):not(.s--active) {
+      transform: scale(0.5) translate3d(210.4166666667%,0,0);opacity:0;transition:transform 0.95s,opacity 0.95s;
+    }
+    .el:nth-child(3) .el__inner{transition-delay:0.2s;}
+    .el:nth-child(3) .el__bg { transform: translate3d(-38.4%,0,0);}
+    .el:nth-child(3) .el__bg:before {
+      transition-delay: 0.2s;
+      background-image: url("https://static.nike.com/a/images/t_PDP_936_v1/f_auto,q_auto:eco,u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/0c0b5982-fcbf-4195-9c84-a05ccb22f1be/AIR+JORDAN+11+RETRO.png"); /* AJ 11 Retro Legend Blue */
+    }
+    .el:nth-child(4) { transform: translate3d(315.625%,0,0); transform-origin:365.625% 50%;}
+    .cont.s--el-active .el:nth-child(4):not(.s--active) {
+      transform: scale(0.5) translate3d(315.625%,0,0);opacity:0;transition:transform 0.95s,opacity 0.95s;
+    }
+    .el:nth-child(4) .el__inner{transition-delay:0.3s;}
+    .el:nth-child(4) .el__bg { transform: translate3d(-57.6%,0,0);}
+    .el:nth-child(4) .el__bg:before {
+      transition-delay: 0.3s;
+      background-image: url("https://static.nike.com/a/images/w_1280,q_auto,f_auto/14cac72b-4cab-4bb5-8c5a-3b4b6567d121/air-jordan-4-fire-red-release-date.jpg"); /* AJ 4 Fire Red */
+    }
+    .el:nth-child(5) { transform: translate3d(420.8333333333%,0,0); transform-origin:470.8333333333% 50%;}
+    .cont.s--el-active .el:nth-child(5):not(.s--active) {
+      transform: scale(0.5) translate3d(420.8333333333%,0,0);opacity:0;transition:transform 0.95s,opacity 0.95s;
+    }
+    .el:nth-child(5) .el__inner{transition-delay:0.4s;}
+    .el:nth-child(5) .el__bg { transform: translate3d(-76.8%,0,0);}
+    .el:nth-child(5) .el__bg:before {
+      transition-delay: 0.4s;
+      background-image: url("https://static.nike.com/a/images/w_1280,q_auto,f_auto/dxcta94tbbywzjzn65du/air-jordan-5-metallic-silver-release-date.jpg"); /* AJ 5 Metallic Silver */
+    }
+    .el:hover .el__bg:after { opacity: 0; }
+    .el.s--active {
+      z-index: 1; width: 100%; transform: translate3d(0,0,0);
+      transition: transform 0.6s, width 0.7s 0.7s, z-index 0s;
+    }
+    .el.s--active .el__bg { transform: translate3d(0,0,0); transition: transform 0.6s;}
+    .el.s--active .el__bg:before {transition-delay:0.6s; transform: scale(1.1);}
+    @media (max-width: 950px) {
+      .cont { padding: 10px 2vw; }
+    }
+    @media (max-width: 750px) {
+      .cont { padding: 4vw 0.5vw; }
+      .el__text { font-size: 20px; }
+      .el__content { padding: 15px;}
+    }
+  </style>
+</head>
+<body>
+<div class="cont s--inactive">
+  <div class="cont__inner">
+    <!-- Section 1: Air Jordan 1 High -->
+    <div class="el">
+      <div class="el__overflow">
+        <div class="el__inner">
+          <div class="el__bg"></div>
+          <div class="el__preview-cont">
+            <h2 class="el__heading">Air Jordan 1 High</h2>
+          </div>
+          <div class="el__content">
+            <div class="el__text">Classic 1 High OG: "White/Black/Grey"</div>
+            <div class="el__close-btn"></div>
+          </div>
+        </div>
+      </div>
+      <div class="el__index">
+        <div class="el__index-back">1</div>
+        <div class="el__index-front">
+          <div class="el__index-overlay" data-index="1">1</div>
+        </div>
+      </div>
+    </div>
+    <!-- Section 2: Air Jordan 3 Retro -->
+    <div class="el">
+      <div class="el__overflow">
+        <div class="el__inner">
+          <div class="el__bg"></div>
+          <div class="el__preview-cont">
+            <h2 class="el__heading">Air Jordan 3 Retro</h2>
+          </div>
+          <div class="el__content">
+            <div class="el__text">3 Retro "Lucky Shorts"</div>
+            <div class="el__close-btn"></div>
+          </div>
+        </div>
+      </div>
+      <div class="el__index">
+        <div class="el__index-back">2</div>
+        <div class="el__index-front">
+          <div class="el__index-overlay" data-index="2">2</div>
+        </div>
+      </div>
+    </div>
+    <!-- Section 3: Air Jordan 11 Retro -->
+    <div class="el">
+      <div class="el__overflow">
+        <div class="el__inner">
+          <div class="el__bg"></div>
+          <div class="el__preview-cont">
+            <h2 class="el__heading">Air Jordan 11 Retro</h2>
+          </div>
+          <div class="el__content">
+            <div class="el__text">11 Retro "Legend Blue"</div>
+            <div class="el__close-btn"></div>
+          </div>
+        </div>
+      </div>
+      <div class="el__index">
+        <div class="el__index-back">3</div>
+        <div class="el__index-front">
+          <div class="el__index-overlay" data-index="3">3</div>
+        </div>
+      </div>
+    </div>
+    <!-- Section 4: Air Jordan 4 Fire Red -->
+    <div class="el">
+      <div class="el__overflow">
+        <div class="el__inner">
+          <div class="el__bg"></div>
+          <div class="el__preview-cont">
+            <h2 class="el__heading">Air Jordan 4 Fire Red</h2>
+          </div>
+          <div class="el__content">
+            <div class="el__text">4 Retro "Fire Red"</div>
+            <div class="el__close-btn"></div>
+          </div>
+        </div>
+      </div>
+      <div class="el__index">
+        <div class="el__index-back">4</div>
+        <div class="el__index-front">
+          <div class="el__index-overlay" data-index="4">4</div>
+        </div>
+      </div>
+    </div>
+    <!-- Section 5: Air Jordan 5 Metallic Silver -->
+    <div class="el">
+      <div class="el__overflow">
+        <div class="el__inner">
+          <div class="el__bg"></div>
+          <div class="el__preview-cont">
+            <h2 class="el__heading">Air Jordan 5 Metallic</h2>
+          </div>
+          <div class="el__content">
+            <div class="el__text">5 "Metallic Silver"</div>
+            <div class="el__close-btn"></div>
+          </div>
+        </div>
+      </div>
+      <div class="el__index">
+        <div class="el__index-back">5</div>
+        <div class="el__index-front">
+          <div class="el__index-overlay" data-index="5">5</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  var $cont = document.querySelector('.cont');
+  var $elsArr = [].slice.call(document.querySelectorAll('.el'));
+  var $closeBtnsArr = [].slice.call(document.querySelectorAll('.el__close-btn'));
+
+  setTimeout(function () {
+    $cont.classList.remove('s--inactive');
+  }, 200);
+
+  $elsArr.forEach(function ($el) {
+    $el.addEventListener('click', function () {
+      if (this.classList.contains('s--active')) return;
+      $cont.classList.add('s--el-active');
+      this.classList.add('s--active');
+    });
+  });
+
+  $closeBtnsArr.forEach(function ($btn) {
+    $btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      $cont.classList.remove('s--el-active');
+      document.querySelector('.el.s--active').classList.remove('s--active');
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2a86db;
+            --secondary-color: #1a1a2e;
+            --card-bg-day: linear-gradient(135deg, rgba(65, 184, 240, 0.9), rgba(13, 71, 161, 0.9));
+            --card-bg-night: linear-gradient(135deg, rgba(25, 25, 112, 0.95), rgba(10, 10, 40, 0.95));
+            --card-bg-rain: linear-gradient(135deg, rgba(75, 75, 105, 0.9), rgba(35, 35, 60, 0.9));
+            --card-bg-snow: linear-gradient(135deg, rgba(200, 215, 235, 0.9), rgba(87, 119, 163, 0.9));
+            --card-bg-clouds: linear-gradient(135deg, rgba(125, 137, 176, 0.9), rgba(67, 76, 94, 0.9));
+            --card-bg-clear: linear-gradient(135deg, rgba(97, 186, 255, 0.9), rgba(6, 95, 170, 0.9));
+            --card-bg-thunderstorm: linear-gradient(135deg, rgba(55, 65, 100, 0.9), rgba(25, 25, 50, 0.95));
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f5f7fa;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-image: url('https://cdn.jsdelivr.net/gh/mdbootstrap/img/Photos/Others/images/76.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 100%;
+            width: 400px;
+        }
+
+        .weather-card {
+            border-radius: 1.5rem;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            transition: all 0.5s ease;
+            position: relative;
+            transform-style: preserve-3d;
+            backdrop-filter: blur(5px);
+        }
+
+        .weather-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            transition: background 1s ease;
+            background: var(--card-bg-day);
+        }
+
+        .weather-card.night .weather-background {
+            background: var(--card-bg-night);
+        }
+
+        .weather-card.rain .weather-background {
+            background: var(--card-bg-rain);
+        }
+
+        .weather-card.snow .weather-background {
+            background: var(--card-bg-snow);
+        }
+
+        .weather-card.clouds .weather-background {
+            background: var(--card-bg-clouds);
+        }
+
+        .weather-card.clear .weather-background {
+            background: var(--card-bg-clear);
+        }
+        
+        .weather-card.thunderstorm .weather-background {
+            background: var(--card-bg-thunderstorm);
+        }
+
+        .search-box {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .search-input {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 2rem;
+            padding: 0.75rem 1.5rem;
+            color: white;
+            width: 100%;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .search-input:focus {
+            background: rgba(255, 255, 255, 0.3);
+            outline: none;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .search-button {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .search-button:hover {
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .weather-icon {
+            width: 140px;
+            height: 140px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .weather-icon svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .temperature {
+            font-size: 5rem;
+            font-weight: 700;
+            line-height: 1;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .description {
+            font-size: 1.5rem;
+            font-weight: 500;
+            text-transform: capitalize;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .details-box {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 1rem;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        .details-box:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .detail-item {
+            position: relative;
+            height: 100%;
+        }
+
+        /* Animation Elements */
+        .rain-drop {
+            position: absolute;
+            width: 2px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            z-index: -1;
+            opacity: 0;
+            animation: rain-fall linear infinite;
+        }
+
+        @keyframes rain-fall {
+            0% {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(100px);
+            }
+        }
+
+        .snowflake {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            z-index: -1;
+            opacity: 0;
+            animation: snow-fall linear infinite;
+        }
+
+        @keyframes snow-fall {
+            0% {
+                opacity: 0;
+                transform: translateY(-20px) rotate(0deg);
+            }
+            10% {
+                opacity: 0.8;
+            }
+            90% {
+                opacity: 0.8;
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(100px) rotate(360deg);
+            }
+        }
+
+        .lightning {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: -1;
+            opacity: 0;
+            filter: blur(1px);
+            animation: lightning ease-out;
+        }
+
+        @keyframes lightning {
+            0% {
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.9;
+            }
+            15% {
+                opacity: 0.2;
+            }
+            20% {
+                opacity: 0.9;
+            }
+            30% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            filter: blur(5px);
+            z-index: -1;
+            opacity: 0;
+            animation: cloud-move linear infinite;
+        }
+
+        @keyframes cloud-move {
+            0% {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            10% {
+                opacity: 0.6;
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(150%);
+            }
+        }
+
+        .sun-ray {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.7);
+            z-index: -1;
+            transform-origin: top;
+            filter: blur(3px);
+            animation: sun-ray-rotate linear infinite;
+            display: none;
+        }
+
+        @keyframes sun-ray-rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .stars {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            z-index: -1;
+            animation: star-twinkle ease-in-out infinite alternate;
+            display: none;
+        }
+
+        @keyframes star-twinkle {
+            0% {
+                opacity: 0.2;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            border-radius: 1.5rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1rem;
+            background: rgba(220, 53, 69, 0.8);
+            color: white;
+            text-align: center;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+            z-index: 10;
+        }
+
+        .error-message.show {
+            transform: translateY(0);
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-in forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.5s ease-out forwards;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .animate-pop {
+            animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes pop {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .animated-icon {
+            animation: icon-float 3s ease-in-out infinite;
+        }
+
+        @keyframes icon-float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .weather-card.animate-change {
+            animation: card-change 1s ease;
+        }
+
+        @keyframes card-change {
+            0% { transform: scale(0.95) translateY(5px); opacity: 0.8; }
+            50% { transform: scale(1.02) translateY(-5px); }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .location-info.animate-change {
+            animation: location-change 0.5s ease;
+        }
+
+        @keyframes location-change {
+            0% { transform: translateY(-10px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        .forecast-item {
+            transition: all 0.3s ease;
+        }
+
+        .forecast-item:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .forecast-value {
+            transition: all 0.3s ease;
+        }
+
+        .forecast-item:hover .forecast-value {
+            transform: scale(1.1);
+        }
+
+        .geolocate-button {
+            position: absolute;
+            right: -40px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .geolocate-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        /* Animated SVG Icons */
+        .sun-icon .sun-rays {
+            transform-origin: center;
+            animation: rotate 20s linear infinite;
+        }
+
+        .cloud-icon .cloud-move {
+            animation: move-cloud 8s ease-in-out infinite alternate;
+        }
+
+        @keyframes move-cloud {
+            0% { transform: translateX(-5px); }
+            100% { transform: translateX(5px); }
+        }
+
+        .rain-icon .rain-drops {
+            animation: rain-animation 1.5s linear infinite;
+        }
+
+        @keyframes rain-animation {
+            0% { opacity: 0; transform: translateY(0); }
+            70% { opacity: 1; }
+            100% { opacity: 0; transform: translateY(15px); }
+        }
+
+        .snow-icon .snowflakes {
+            animation: snow-animation 2s linear infinite;
+        }
+
+        @keyframes snow-animation {
+            0% { opacity: 0; transform: translateY(0) rotate(0deg); }
+            50% { opacity: 1; }
+            100% { opacity: 0; transform: translateY(15px) rotate(180deg); }
+        }
+
+        .thunderstorm-icon .lightning-bolt {
+            animation: lightning-animation 2s ease-in-out infinite;
+            transform-origin: center;
+        }
+
+        @keyframes lightning-animation {
+            0%, 85%, 100% { opacity: 0; }
+            90%, 95% { opacity: 1; }
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                width: 90%;
+            }
+            
+            .temperature {
+                font-size: 4rem;
+            }
+            
+            .weather-icon {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .geolocate-button {
+                right: 50px;
+                top: 10px;
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="weather-card p-6 text-white relative overflow-hidden">
+            <div class="weather-background"></div>
+            
+            <div class="error-message">
+                <p id="error-text">Error loading weather data.</p>
+            </div>
+            
+            <div class="relative mb-6">
+                <div class="search-box">
+                    <input type="text" id="search-input" class="search-input" placeholder="Search location..." autocomplete="off">
+                    <button id="search-button" class="search-button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                <button id="geolocate-button" class="geolocate-button" title="Get current location">
+                    <i class="fas fa-map-marker-alt"></i>
+                </button>
+            </div>
+            
+            <div class="location-info text-center mb-4 animate-fade-in">
+                <h2 id="location" class="text-2xl font-semibold">Loading...</h2>
+                <p id="date" class="text-sm opacity-90">--</p>
+            </div>
+            
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <div class="weather-icon mb-4 md:mb-0 animate-pop animated-icon" id="weather-icon-container">
+                    <!-- SVG icons will be dynamically inserted here -->
+                </div>
+                
+                <div class="text-center md:text-right animate-slide-up">
+                    <div class="temperature" id="temperature">--°</div>
+                    <div class="description mb-2" id="description">--</div>
+                    <div class="text-sm opacity-90" id="feels-like">Feels like: --°</div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
+                <div class="details-box p-4 text-center animate-fade-in" style="animation-delay: 0.1s;">
+                    <div class="detail-item">
+                        <i class="fas fa-wind mb-2 text-xl"></i>
+                        <p class="text-xs opacity-90 mb-1">WIND</p>
+                        <p id="wind" class="text-lg font-medium">-- km/h</p>
+                    </div>
+                </div>
+                
+                <div class="details-box p-4 text-center animate-fade-in" style="animation-delay: 0.2s;">
+                    <div class="detail-item">
+                        <i class="fas fa-tint mb-2 text-xl"></i>
+                        <p class="text-xs opacity-90 mb-1">HUMIDITY</p>
+                        <p id="humidity" class="text-lg font-medium">--%</p>
+                    </div>
+                </div>
+                
+                <div class="details-box p-4 text-center animate-fade-in" style="animation-delay: 0.3s;">
+                    <div class="detail-item">
+                        <i class="fas fa-compress-arrows-alt mb-2 text-xl"></i>
+                        <p class="text-xs opacity-90 mb-1">PRESSURE</p>
+                        <p id="pressure" class="text-lg font-medium">-- hPa</p>
+                    </div>
+                </div>
+                
+                <div class="details-box p-4 text-center animate-fade-in" style="animation-delay: 0.4s;">
+                    <div class="detail-item">
+                        <i class="fas fa-eye mb-2 text-xl"></i>
+                        <p class="text-xs opacity-90 mb-1">VISIBILITY</p>
+                        <p id="visibility" class="text-lg font-medium">-- km</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6">
+                <h3 class="text-lg font-medium mb-3">Forecast</h3>
+                <div class="overflow-x-auto">
+                    <div id="forecast-container" class="flex space-x-4 pb-2">
+                        <!-- Forecast items will be added here -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4 text-white text-xs opacity-70">
+            <p>Weather data provided by OpenWeather API</p>
+        </div>
+    </div>
+
+    <script>
+        // SVG Icons Templates
+        const svgIcons = {
+            // Clear Day
+            clearDay: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="sun-icon">
+                <circle cx="50" cy="50" r="20" fill="#FFD600" />
+                <g class="sun-rays">
+                    <line x1="50" y1="15" x2="50" y2="30" stroke="#FFD600" stroke-width="3" stroke-linecap="round" />
+                    <line x1="50" y1="70" x2="50" y2="85" stroke="#FFD600" stroke-width="3" stroke-linecap="round" />
+                    <line x1="15" y1="50" x2="30" y2="50" stroke="#FFD600" stroke-width="3" stroke-linecap="round" />
+                    <line x1="70" y1="50" x2="85" y2="50" stroke="#FFD600" stroke-width="3" stroke-linecap="round" />
+                    <line x1="25.5" y1="25.5" x2="35.5" y2="35.5" stroke="#FFD600" stroke-width="3" stroke-linecap="round" />
+                    <line x1="64.5" y1="64.5" x2="74.5" y2="74.5" stroke="#FFD600" stroke-width="3" stroke-linecap="round" />
+                    <line x1="25.5" y1="74.5" x2="35.5" y2="64.5" stroke="#FFD600" stroke-width="3" stroke-linecap="round" />
+                    <line x1="64.5" y1="35.5" x2="74.5" y2="25.5" stroke="#FFD600" stroke-width="3" stroke-linecap="round" />
+                </g>
+            </svg>`,
+            
+            // Clear Night
+            clearNight: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                <path d="M40,20 A30,30 0 1,0 80,60 A30,30 0 0,1 40,20z" fill="#E3F3F9" />
+                <circle cx="35" cy="30" r="2" fill="#FFFFFF" />
+                <circle cx="70" cy="50" r="2" fill="#FFFFFF" />
+                <circle cx="50" cy="70" r="2" fill="#FFFFFF" />
+                <circle cx="25" cy="65" r="1.5" fill="#FFFFFF" />
+                <circle cx="60" cy="35" r="1.5" fill="#FFFFFF" />
+            </svg>`,
+            
+            // Cloudy
+            cloudy: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                <g class="cloud-icon">
+                    <path class="cloud-move" d="M80,45 C80,35 70,25 55,25 C40,25 35,35 35,40 C20,40 15,50 15,60 C15,70 25,75 35,75 L75,75 C85,75 90,65 90,55 C90,45 85,45 80,45 Z" fill="#FFFFFF" />
+                </g>
+            </svg>`,
+            
+            // Partly Cloudy Day
+            partlyCloudyDay: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                <circle cx="40" cy="35" r="12" fill="#FFD600" />
+                <g class="sun-rays">
+                    <line x1="40" y1="18" x2="40" y2="23" stroke="#FFD600" stroke-width="2" stroke-linecap="round" />
+                    <line x1="40" y1="47" x2="40" y2="52" stroke="#FFD600" stroke-width="2" stroke-linecap="round" />
+                    <line x1="23" y1="35" x2="28" y2="35" stroke="#FFD600" stroke-width="2" stroke-linecap="round" />
+                    <line x1="52" y1="35" x2="57" y2="35" stroke="#FFD600" stroke-width="2" stroke-linecap="round" />
+                    <line x1="28" y1="23" x2="32" y2="27" stroke="#FFD600" stroke-width="2" stroke-linecap="round" />
+                    <line x1="48" y1="43" x2="52" y2="47" stroke="#FFD600" stroke-width="2" stroke-linecap="round" />
+                    <line x1="28" y1="47" x2="32" y2="43" stroke="#FFD600" stroke-width="2" stroke-linecap="round" />
+                    <line x1="48" y1="27" x2="52" y2="23" stroke="#FFD600" stroke-width="2" stroke-linecap="round" />
+                </g>
+                <g class="cloud-icon">
+                    <path class="cloud-move" d="M75,50 C75,42 67,35 55,35 C43,35 40,42 40,45 C30,45 25,50 25,60 C25,70 35,75 45,75 L70,75 C80,75 85,65 85,60 C85,55 80,50 75,50 Z" fill="#FFFFFF" />
+                </g>
+            </svg>`,
+            
+            // Partly Cloudy Night
+            partlyCloudyNight: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                <path d="M40,20 A20,20 0 1,0 60,40 A20,20 0 0,1 40,20z" fill="#E3F3F9" />
+                <g class="cloud-icon">
+                    <path class="cloud-move" d="M75,50 C75,42 67,35 55,35 C43,35 40,42 40,45 C30,45 25,50 25,60 C25,70 35,75 45,75 L70,75 C80,75 85,65 85,60 C85,55 80,50 75,50 Z" fill="#FFFFFF" />
+                </g>
+            </svg>`,
+            
+            // Rain
+            rain: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                <g class="cloud-icon">
+                    <path class="cloud-move" d="M80,35 C80,25 70,15 55,15 C40,15 35,25 35,30 C20,30 15,40 15,50 C15,60 25,65 35,65 L75,65 C85,65 90,55 90,45 C90,35 85,35 80,35 Z" fill="#FFFFFF" />
+                </g>
+                <g class="rain-drops">
+                    <line x1="30" y1="70" x2="25" y2="85" stroke="#85C1E9" stroke-width="2" stroke-linecap="round" />
+                    <line x1="40" y1="70" x2="35" y2="85" stroke="#85C1E9" stroke-width="2" stroke-linecap="round" />
+                    <line x1="50" y1="70" x2="45" y2="85" stroke="#85C1E9" stroke-width="2" stroke-linecap="round" />
+                    <line x1="60" y1="70" x2="55" y2="85" stroke="#85C1E9" stroke-width="2" stroke-linecap="round" />
+                    <line x1="70" y1="70" x2="65" y2="85" stroke="#85C1E9" stroke-width="2" stroke-linecap="round" />
+                </g>
+            </svg>`,
+            
+            // Snow
+            snow: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                <g class="cloud-icon">
+                    <path class="cloud-move" d="M80,35 C80,25 70,15 55,15 C40,15 35,25 35,30 C20,30 15,40 15,50 C15,60 25,65 35,65 L75,65 C85,65 90,55 90,45 C90,35 85,35 80,35 Z" fill="#FFFFFF" />
+                </g>
+                <g class="snowflakes">
+                    <circle cx="30" cy="75" r="2" fill="#FFFFFF" />
+                    <circle cx="40" cy="80" r="2" fill="#FFFFFF" />
+                    <circle cx="50" cy="75" r="2" fill="#FFFFFF" />
+                    <circle cx="60" cy="80" r="2" fill="#FFFFFF" />
+                    <circle cx="70" cy="75" r="2" fill="#FFFFFF" />
+                    
+                    <circle cx="35" cy="85" r="2" fill="#FFFFFF" />
+                    <circle cx="45" cy="90" r="2" fill="#FFFFFF" />
+                    <circle cx="55" cy="85" r="2" fill="#FFFFFF" />
+                    <circle cx="65" cy="90" r="2" fill="#FFFFFF" />
+                </g>
+            </svg>`,
+            
+            // Thunderstorm
+            thunderstorm: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                <g class="cloud-icon">
+                    <path class="cloud-move" d="M80,35 C80,25 70,15 55,15 C40,15 35,25 35,30 C20,30 15,40 15,50 C15,60 25,65 35,65 L75,65 C85,65 90,55 90,45 C90,35 85,35 80,35 Z" fill="#393E46" />
+                </g>
+                <g class="rain-drops">
+                    <line x1="30" y1="70" x2="25" y2="80" stroke="#85C1E9" stroke-width="2" stroke-linecap="round" />
+                    <line x1="50" y1="70" x2="45" y2="80" stroke="#85C1E9" stroke-width="2" stroke-linecap="round" />
+                    <line x1="70" y1="70" x2="65" y2="80" stroke="#85C1E9" stroke-width="2" stroke-linecap="round" />
+                </g>
+                <path class="lightning-bolt" d="M55,65 L45,80 L55,80 L45,95" stroke="#FFD600" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>`,
+            
+            // Mist/Fog
+            fog: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                <g>
+                    <line x1="20" y1="30" x2="80" y2="30" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" />
+                    <line x1="25" y1="40" x2="75" y2="40" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" />
+                    <line x1="20" y1="50" x2="80" y2="50" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" />
+                    <line x1="25" y1="60" x2="75" y2="60" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" />
+                    <line x1="30" y1="70" x2="70" y2="70" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" />
+                </g>
+            </svg>`,
+            
+            // Drizzle
+            drizzle: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                <g class="cloud-icon">
+                    <path class="cloud-move" d="M80,35 C80,25 70,15 55,15 C40,15 35,25 35,30 C20,30 15,40 15,50 C15,60 25,65 35,65 L75,65 C85,65 90,55 90,45 C90,35 85,35 80,35 Z" fill="#FFFFFF" />
+                </g>
+                <g class="rain-drops">
+                    <line x1="35" y1="70" x2="33" y2="80" stroke="#85C1E9" stroke-width="2" stroke-linecap="round" />
+                    <line x1="45" y1="75" x2="43" y2="85" stroke="#85C1E9" stroke-width="2" stroke-linecap="round" />
+                    <line x1="55" y1="70" x2="53" y2="80" stroke="#85C1E9" stroke-width="2" stroke-linecap="round" />
+                    <line x1="65" y1="75" x2="63" y2="85" stroke="#85C1E9" stroke-width="2" stroke-linecap="round" />
+                </g>
+            </svg>`,
+            
+            // Unknown/Default
+            unknown: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="30" fill="none" stroke="#FFFFFF" stroke-width="3" />
+                <text x="50" y="60" font-size="40" text-anchor="middle" fill="#FFFFFF">?</text>
+            </svg>`
+        };
+
+        // Constants
+        const API_KEY = '4d8fb5b93d4af21d66a2948710284366'; // OpenWeather API key
+        
+        // DOM Elements
+        const weatherCard = document.querySelector('.weather-card');
+        const weatherBackground = document.querySelector('.weather-background');
+        const searchInput = document.getElementById('search-input');
+        const searchButton = document.getElementById('search-button');
+        const geolocateButton = document.getElementById('geolocate-button');
+        const locationElement = document.getElementById('location');
+        const dateElement = document.getElementById('date');
+        const temperatureElement = document.getElementById('temperature');
+        const descriptionElement = document.getElementById('description');
+        const feelsLikeElement = document.getElementById('feels-like');
+        const windElement = document.getElementById('wind');
+        const humidityElement = document.getElementById('humidity');
+        const pressureElement = document.getElementById('pressure');
+        const visibilityElement = document.getElementById('visibility');
+        const weatherIconContainer = document.getElementById('weather-icon-container');
+        const forecastContainer = document.getElementById('forecast-container');
+        const loadingElement = document.getElementById('loading');
+        const errorElement = document.querySelector('.error-message');
+        const errorTextElement = document.getElementById('error-text');
+        
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Default city on load
+            getWeatherByCity('London');
+            
+            // Search button click
+            searchButton.addEventListener('click', () => {
+                const city = searchInput.value.trim();
+                if (city) {
+                    getWeatherByCity(city);
+                }
+            });
+            
+            // Enter key in search input
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const city = searchInput.value.trim();
+                    if (city) {
+                        getWeatherByCity(city);
+                    }
+                }
+            });
+            
+            // Geolocation button click
+            geolocateButton.addEventListener('click', () => {
+                if (navigator.geolocation) {
+                    showLoading();
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            getWeatherByCoords(position.coords.latitude, position.coords.longitude);
+                        },
+                        (error) => {
+                            hideLoading();
+                            showError('Unable to get your location. Please enable location services.');
+                        }
+                    );
+                } else {
+                    showError('Geolocation is not supported by your browser.');
+                }
+            });
+        });
+        
+        // Functions
+        function getWeatherByCity(city) {
+            showLoading();
+            
+            // First, get coordinates for the city
+            fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${API_KEY}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        const { lat, lon } = data[0];
+                        getWeatherByCoords(lat, lon);
+                    } else {
+                        hideLoading();
+                        showError('City not found. Please try another location.');
+                    }
+                })
+                .catch(error => {
+                    hideLoading();
+                    showError('An error occurred while fetching location data.');
+                    console.error('Error:', error);
+                });
+        }
+        
+        function getWeatherByCoords(lat, lon) {
+            // Get current weather
+            fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`)
+                .then(response => response.json())
+                .then(weatherData => {
+                    // Get 3-hour forecast for the next 24 hours
+                    fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&cnt=8`)
+                        .then(response => response.json())
+                        .then(forecastData => {
+                            hideLoading();
+                            updateWeatherDisplay(weatherData, forecastData);
+                        })
+                        .catch(error => {
+                            hideLoading();
+                            showError('An error occurred while fetching forecast data.');
+                            console.error('Error:', error);
+                        });
+                })
+                .catch(error => {
+                    hideLoading();
+                    showError('An error occurred while fetching weather data.');
+                    console.error('Error:', error);
+                });
+        }
+        
+        function updateWeatherDisplay(weatherData, forecastData) {
+            // Clear any previous animations
+            clearWeatherAnimations();
+            
+            // Update location and date
+            const cityName = weatherData.name;
+            const countryCode = weatherData.sys.country;
+            locationElement.textContent = `${cityName}, ${countryCode}`;
+            locationElement.classList.add('animate-change');
+            
+            const currentDate = new Date();
+            dateElement.textContent = formatDate(currentDate);
+            
+            // Update temperature and description
+            const temp = Math.round(weatherData.main.temp);
+            temperatureElement.textContent = `${temp}°`;
+            
+            const feelsLike = Math.round(weatherData.main.feels_like);
+            feelsLikeElement.textContent = `Feels like: ${feelsLike}°`;
+            
+            const description = weatherData.weather[0].description;
+            descriptionElement.textContent = description;
+            
+            // Update weather details
+            const windSpeed = Math.round(weatherData.wind.speed * 3.6); // Convert m/s to km/h
+            windElement.textContent = `${windSpeed} km/h`;
+            
+            const humidity = weatherData.main.humidity;
+            humidityElement.textContent = `${humidity}%`;
+            
+            const pressure = weatherData.main.pressure;
+            pressureElement.textContent = `${pressure} hPa`;
+            
+            const visibility = weatherData.visibility / 1000; // Convert m to km
+            visibilityElement.textContent = `${visibility.toFixed(1)} km`;
+            
+            // Update weather icon and background
+            const weatherId = weatherData.weather[0].id;
+            const isDay = isItDaytime(weatherData.sys.sunrise, weatherData.sys.sunset);
+            
+            updateWeatherIcon(weatherId, isDay);
+            updateCardBackground(weatherId, isDay);
+            createWeatherAnimations(weatherId, isDay);
+            
+            // Update forecast
+            updateForecast(forecastData.list);
+            
+            // Animate the card
+            weatherCard.classList.add('animate-change');
+            setTimeout(() => {
+                weatherCard.classList.remove('animate-change');
+                locationElement.classList.remove('animate-change');
+            }, 1000);
+        }
+        
+        function updateWeatherIcon(weatherId, isDay) {
+            let iconSvg;
+            
+            if (weatherId >= 200 && weatherId < 300) {
+                // Thunderstorm
+                iconSvg = svgIcons.thunderstorm;
+            } else if (weatherId >= 300 && weatherId < 400) {
+                // Drizzle
+                iconSvg = svgIcons.drizzle;
+            } else if (weatherId >= 500 && weatherId < 600) {
+                // Rain
+                iconSvg = svgIcons.rain;
+            } else if (weatherId >= 600 && weatherId < 700) {
+                // Snow
+                iconSvg = svgIcons.snow;
+            } else if (weatherId >= 700 && weatherId < 800) {
+                // Atmosphere (fog, mist, etc.)
+                iconSvg = svgIcons.fog;
+            } else if (weatherId === 800) {
+                // Clear sky
+                iconSvg = isDay ? svgIcons.clearDay : svgIcons.clearNight;
+            } else if (weatherId > 800) {
+                // Cloudy
+                if (weatherId === 801) {
+                    iconSvg = isDay ? svgIcons.partlyCloudyDay : svgIcons.partlyCloudyNight;
+                } else {
+                    iconSvg = svgIcons.cloudy;
+                }
+            } else {
+                // Default/unknown
+                iconSvg = svgIcons.unknown;
+            }
+            
+            // Set the icon
+            weatherIconContainer.innerHTML = iconSvg;
+        }
+        
+        function updateCardBackground(weatherId, isDay) {
+            // Remove all previous classes
+            const classesToRemove = ['clear', 'clouds', 'rain', 'snow', 'thunderstorm', 'night'];
+            weatherCard.classList.remove(...classesToRemove);
+            
+            // Add new class based on weather
+            if (weatherId >= 200 && weatherId < 300) {
+                weatherCard.classList.add('thunderstorm');
+            } else if ((weatherId >= 300 && weatherId < 400) || (weatherId >= 500 && weatherId < 600)) {
+                weatherCard.classList.add('rain');
+            } else if (weatherId >= 600 && weatherId < 700) {
+                weatherCard.classList.add('snow');
+            } else if (weatherId === 800) {
+                weatherCard.classList.add('clear');
+            } else if (weatherId > 800) {
+                weatherCard.classList.add('clouds');
+            }
+            
+            // Add night class if it's night time
+            if (!isDay) {
+                weatherCard.classList.add('night');
+            }
+        }
+        
+        function createWeatherAnimations(weatherId, isDay) {
+            // Create elements for different weather conditions
+            if (weatherId >= 200 && weatherId < 300) {
+                // Thunderstorm
+                createLightningEffect();
+                createRaindrops(15);
+            } else if ((weatherId >= 300 && weatherId < 400) || (weatherId >= 500 && weatherId < 600)) {
+                // Rain
+                createRaindrops(20);
+            } else if (weatherId >= 600 && weatherId < 700) {
+                // Snow
+                createSnowflakes(20);
+            } else if (weatherId > 800) {
+                // Clouds
+                createClouds(5);
+            } else if (weatherId === 800) {
+                if (isDay) {
+                    // Clear day
+                    createSunRays();
+                } else {
+                    // Clear night
+                    createStars(30);
+                }
+            }
+            
+            // Add night time stars if it's night
+            if (!isDay && weatherId !== 800) {
+                createStars(15);
+            }
+        }
+        
+        function createRaindrops(count) {
+            for (let i = 0; i < count; i++) {
+                const drop = document.createElement('div');
+                drop.classList.add('rain-drop');
+                
+                // Random positions and sizes
+                const size = Math.random() * 3 + 1;
+                const x = Math.random() * 100;
+                const delay = Math.random() * 2;
+                const duration = Math.random() * 0.5 + 0.5;
+                
+                drop.style.height = `${10 + Math.random() * 10}px`;
+                drop.style.left = `${x}%`;
+                drop.style.animationDelay = `${delay}s`;
+                drop.style.animationDuration = `${duration}s`;
+                
+                weatherBackground.appendChild(drop);
+            }
+        }
+        
+        function createSnowflakes(count) {
+            for (let i = 0; i < count; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.classList.add('snowflake');
+                
+                // Random positions and sizes
+                const size = Math.random() * 5 + 2;
+                const x = Math.random() * 100;
+                const delay = Math.random() * 5;
+                const duration = Math.random() * 3 + 2;
+                
+                snowflake.style.width = `${size}px`;
+                snowflake.style.height = `${size}px`;
+                snowflake.style.left = `${x}%`;
+                snowflake.style.animationDelay = `${delay}s`;
+                snowflake.style.animationDuration = `${duration}s`;
+                
+                weatherBackground.appendChild(snowflake);
+            }
+        }
+        
+        function createLightningEffect() {
+            // Create periodic lightning flashes
+            const createFlash = () => {
+                const lightning = document.createElement('div');
+                lightning.classList.add('lightning');
+                
+                lightning.style.width = '100%';
+                lightning.style.height = '100%';
+                lightning.style.top = '0';
+                lightning.style.left = '0';
+                lightning.style.animationDuration = '1s';
+                
+                weatherBackground.appendChild(lightning);
+                
+                // Remove after animation completes
+                setTimeout(() => {
+                    lightning.remove();
+                }, 1000);
+            };
+            
+            // Initial flash
+            createFlash();
+            
+            // Schedule random flashes
+            const flashInterval = setInterval(() => {
+                createFlash();
+            }, 3000 + Math.random() * 5000);
+            
+            // Store interval ID for cleanup
+            weatherBackground.dataset.flashInterval = flashInterval;
+        }
+        
+        function createClouds(count) {
+            for (let i = 0; i < count; i++) {
+                const cloud = document.createElement('div');
+                cloud.classList.add('cloud');
+                
+                // Random cloud shapes and positions
+                const width = 30 + Math.random() * 40;
+                const height = 15 + Math.random() * 15;
+                const y = Math.random() * 60 + 10;
+                const delay = Math.random() * 5;
+                const duration = 30 + Math.random() * 20;
+                
+                cloud.style.width = `${width}%`;
+                cloud.style.height = `${height}%`;
+                cloud.style.top = `${y}%`;
+                cloud.style.animationDelay = `${delay}s`;
+                cloud.style.animationDuration = `${duration}s`;
+                
+                weatherBackground.appendChild(cloud);
+            }
+        }
+        
+        function createSunRays() {
+            // Create a container for the sun rays
+            const rayContainer = document.createElement('div');
+            rayContainer.style.position = 'absolute';
+            rayContainer.style.top = '20%';
+            rayContainer.style.right = '10%';
+            rayContainer.style.width = '30%';
+            rayContainer.style.height = '30%';
+            rayContainer.style.zIndex = '-1';
+            
+            // Create rays
+            for (let i = 0; i < 12; i++) {
+                const ray = document.createElement('div');
+                ray.classList.add('sun-ray');
+                ray.style.display = 'block';
+                ray.style.position = 'absolute';
+                ray.style.width = '2px';
+                ray.style.height = '100%';
+                ray.style.top = '0';
+                ray.style.left = '50%';
+                ray.style.transformOrigin = 'bottom center';
+                ray.style.transform = `rotate(${i * 30}deg)`;
+                ray.style.animationDuration = '30s';
+                
+                rayContainer.appendChild(ray);
+            }
+            
+            weatherBackground.appendChild(rayContainer);
+        }
+        
+        function createStars(count) {
+            for (let i = 0; i < count; i++) {
+                const star = document.createElement('div');
+                star.classList.add('stars');
+                star.style.display = 'block';
+                
+                // Random positions and sizes
+                const size = Math.random() * 3 + 1;
+                const x = Math.random() * 100;
+                const y = Math.random() * 70 + 5;
+                const delay = Math.random() * 2;
+                const duration = Math.random() * 2 + 1;
+                
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.left = `${x}%`;
+                star.style.top = `${y}%`;
+                star.style.animationDelay = `${delay}s`;
+                star.style.animationDuration = `${duration}s`;
+                
+                weatherBackground.appendChild(star);
+            }
+        }
+        
+        function clearWeatherAnimations() {
+            // Clear any lightning interval
+            if (weatherBackground.dataset.flashInterval) {
+                clearInterval(parseInt(weatherBackground.dataset.flashInterval));
+                delete weatherBackground.dataset.flashInterval;
+            }
+            
+            // Remove all animation elements
+            const elements = weatherBackground.querySelectorAll('.rain-drop, .snowflake, .lightning, .cloud, .sun-ray, .stars');
+            elements.forEach(element => element.remove());
+            
+            // Remove any other elements that were added to the background
+            while (weatherBackground.firstChild) {
+                weatherBackground.firstChild.remove();
+            }
+        }
+        
+        function updateForecast(forecastData) {
+            forecastContainer.innerHTML = '';
+            
+            forecastData.forEach((item, index) => {
+                const time = new Date(item.dt * 1000);
+                const temp = Math.round(item.main.temp);
+                const iconCode = item.weather[0].icon;
+                const description = item.weather[0].description;
+                
+                const forecastItem = document.createElement('div');
+                forecastItem.className = 'forecast-item bg-white bg-opacity-10 rounded-lg p-3 text-center flex-shrink-0 animate-fade-in';
+                forecastItem.style.animationDelay = `${0.1 * index}s`;
+                
+                // Generate simple weather icon based on code
+                let forecastIcon;
+                if (iconCode.includes('01')) {
+                    forecastIcon = iconCode.includes('d') ? svgIcons.clearDay : svgIcons.clearNight;
+                } else if (iconCode.includes('02')) {
+                    forecastIcon = iconCode.includes('d') ? svgIcons.partlyCloudyDay : svgIcons.partlyCloudyNight;
+                } else if (iconCode.includes('03') || iconCode.includes('04')) {
+                    forecastIcon = svgIcons.cloudy;
+                } else if (iconCode.includes('09')) {
+                    forecastIcon = svgIcons.rain;
+                } else if (iconCode.includes('10')) {
+                    forecastIcon = svgIcons.rain;
+                } else if (iconCode.includes('11')) {
+                    forecastIcon = svgIcons.thunderstorm;
+                } else if (iconCode.includes('13')) {
+                    forecastIcon = svgIcons.snow;
+                } else if (iconCode.includes('50')) {
+                    forecastIcon = svgIcons.fog;
+                } else {
+                    forecastIcon = svgIcons.unknown;
+                }
+                
+                forecastItem.innerHTML = `
+                    <p class="text-xs opacity-90 mb-1">${formatTime(time)}</p>
+                    <div class="w-10 h-10 mx-auto">${forecastIcon}</div>
+                    <p class="forecast-value text-xl font-medium">${temp}°</p>
+                    <p class="text-xs opacity-90">${description}</p>
+                `;
+                
+                forecastContainer.appendChild(forecastItem);
+            });
+        }
+        
+        function isItDaytime(sunrise, sunset) {
+            const now = Math.floor(Date.now() / 1000); // Current time in seconds
+            return now >= sunrise && now < sunset;
+        }
+        
+        function formatDate(date) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            return date.toLocaleDateString('en-US', options);
+        }
+        
+        function formatTime(date) {
+            return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+        }
+        
+        function showLoading() {
+            loadingElement.classList.add('active');
+        }
+        
+        function hideLoading() {
+            loadingElement.classList.remove('active');
+        }
+        
+        function showError(message) {
+            errorTextElement.textContent = message;
+            errorElement.classList.add('show');
+            
+            setTimeout(() => {
+                errorElement.classList.remove('show');
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
