@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Bulb Login Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: black;
+            min-height: 100vh;
+            font-family: 'Arial', sans-serif;
+            transition: background 0.5s ease;
+        }
+
+        body.light {
+            background: white;
+        }
+
+        body.light .text-white {
+            color: black;
+        }
+
+        body.light .login-form {
+            background: rgba(0, 0, 0, 0.1);
+            border-color: rgba(0, 0, 0, 0.2);
+        }
+
+        body.light .form-input {
+            background: rgba(0, 0, 0, 0.1);
+            border-color: rgba(0, 0, 0, 0.2);
+        }
+
+        body.light .placeholder-white::placeholder {
+            color: black;
+        }
+
+        .bulb-container {
+            perspective: 1000px;
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .bulb {
+            width: 100px;
+            height: 140px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .bulb:hover {
+            transform: scale(1.1) rotateY(10deg);
+        }
+
+        .bulb-glass {
+            width: 60px;
+            height: 80px;
+            background: linear-gradient(135deg, #e2e8f0, #cbd5e0);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: inset -10px -10px 20px rgba(0,0,0,0.1), inset 10px 10px 20px rgba(255,255,255,0.8);
+            transition: all 0.5s ease;
+        }
+
+        .bulb-base {
+            width: 40px;
+            height: 30px;
+            background: linear-gradient(135deg, #4a5568, #2d3748);
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .bulb-screw {
+            width: 35px;
+            height: 4px;
+            background: #1a202c;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+
+        .bulb-screw:nth-child(1) { top: 5px; }
+        .bulb-screw:nth-child(2) { top: 12px; }
+        .bulb-screw:nth-child(3) { top: 19px; }
+
+        .bulb.on .bulb-glass {
+            background: radial-gradient(circle, #ffd700, #ffed4a);
+            box-shadow: 
+                0 0 30px #ffd700,
+                0 0 60px #ffd700,
+                0 0 90px #ffd700,
+                inset -5px -5px 15px rgba(255,215,0,0.2);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 30px #ffd700, 0 0 60px #ffd700, inset -5px -5px 15px rgba(255,215,0,0.2); }
+            to { box-shadow: 0 0 40px #ffd700, 0 0 80px #ffd700, 0 0 120px #ffd700, inset -5px -5px 15px rgba(255,215,0,0.4); }
+        }
+
+        .login-container {
+            opacity: 0;
+            transform: translateY(50px) scale(0.8);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+
+        .login-container.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: all;
+        }
+
+        .login-form {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .login-btn {
+            background: linear-gradient(135deg, #ffd700, #ffed4a);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 215, 0, 0.4);
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .login-btn:hover::before {
+            left: 100%;
+        }
+
+        .floating-particles {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: rgba(255, 215, 0, 0.6);
+            border-radius: 50%;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 1; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 0.5; }
+        }
+
+        .particle-1 { top: 20px; left: 20px; animation-delay: 0s; }
+        .particle-2 { top: 60px; right: 30px; animation-delay: 1s; }
+        .particle-3 { bottom: 40px; left: 40px; animation-delay: 2s; }
+        .particle-4 { bottom: 20px; right: 20px; animation-delay: 1.5s; }
+
+        .glow-ring {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border: 2px solid transparent;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        .bulb.on .glow-ring {
+            opacity: 1;
+            border-color: rgba(255, 215, 0, 0.5);
+            animation: pulse-ring 2s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+            50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.8; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4 relative overflow-hidden">
+    <!-- Floating Particles -->
+    <div class="floating-particles particle-1"></div>
+    <div class="floating-particles particle-2"></div>
+    <div class="floating-particles particle-3"></div>
+    <div class="floating-particles particle-4"></div>
+
+    <div class="text-center">
+        <!-- Title -->
+        <h1 class="text-4xl font-bold text-white mb-8 opacity-90" style="position: absolute; top: 10%; left: 50%; transform: translateX(-50%);">
+            <i class="fas fa-lightbulb mr-3"></i>Light Up Login
+        </h1>
+
+        <!-- Bulb Container -->
+        <div class="bulb-container">
+            <div class="bulb" id="lightBulb">
+                <div class="glow-ring"></div>
+                <div class="bulb-glass"></div>
+                <div class="bulb-base">
+                    <div class="bulb-screw"></div>
+                    <div class="bulb-screw"></div>
+                    <div class="bulb-screw"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Form -->
+        <div class="login-container" id="loginContainer" style="position: absolute; top: 45%; left: 50%; transform: translate(-50%, 0);">
+            <div class="login-form rounded-2xl p-8 w-80 mx-auto">
+                <h2 class="text-2xl font-bold text-white mb-6 flex items-center justify-center">
+                    <i class="fas fa-user-circle mr-2"></i>
+                    Welcome Back
+                </h2>
+
+                <form class="space-y-4">
+                    <div class="relative">
+                        <i class="fas fa-envelope absolute left-3 top-1/2 transform -translate-y-1/2 text-white opacity-70"></i>
+                        <input
+                            type="email"
+                            placeholder="Email Address"
+                            class="form-input w-full pl-10 pr-4 py-3 rounded-lg text-white placeholder-white placeholder-opacity-70 focus:outline-none"
+                            required
+                        >
+                    </div>
+
+                    <div class="relative">
+                        <i class="fas fa-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-white opacity-70"></i>
+                        <input
+                            type="password"
+                            placeholder="Password"
+                            class="form-input w-full pl-10 pr-4 py-3 rounded-lg text-white placeholder-white placeholder-opacity-70 focus:outline-none"
+                            required
+                        >
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="login-btn w-full py-3 rounded-lg font-bold text-gray-800 relative overflow-hidden"
+                    >
+                        <i class="fas fa-sign-in-alt mr-2"></i>
+                        Sign In
+                    </button>
+                </form>
+
+                <div class="mt-6 text-center">
+                    <a href="#" class="text-white opacity-70 hover:opacity-100 transition-opacity text-sm">
+                        Forgot Password?
+                    </a>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <p class="text-white opacity-60 text-sm">
+                        Don't have an account?
+                        <a href="#" class="text-yellow-300 hover:text-yellow-200 transition-colors">Sign Up</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <p class="text-white opacity-60 mt-8 text-sm" style="position: absolute; bottom: 10%; left: 50%; transform: translateX(-50%);">
+            <!-- Click the bulb to illuminate your login experience ✨ -->
+        </p>
+    </div>
+
+    <script>
+        const lightBulb = document.getElementById('lightBulb');
+        const loginContainer = document.getElementById('loginContainer');
+        let isLightOn = false;
+
+        lightBulb.addEventListener('click', function() {
+            isLightOn = !isLightOn;
+
+            if (isLightOn) {
+                // Turn on the bulb and show login form
+                lightBulb.classList.add('on');
+                document.body.classList.add('light');
+                setTimeout(() => {
+                    loginContainer.classList.add('show');
+                }, 300);
+
+                // Add some sparkle effect
+                createSparkles();
+            } else {
+                // Turn off the bulb and hide login form
+                loginContainer.classList.remove('show');
+                document.body.classList.remove('light');
+                setTimeout(() => {
+                    lightBulb.classList.remove('on');
+                }, 200);
+            }
+        });
+
+        function createSparkles() {
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    const sparkle = document.createElement('div');
+                    sparkle.className = 'absolute w-2 h-2 bg-yellow-300 rounded-full pointer-events-none';
+                    sparkle.style.left = Math.random() * 100 + '%';
+                    sparkle.style.top = Math.random() * 100 + '%';
+                    sparkle.style.animation = 'sparkle 1s ease-out forwards';
+                    
+                    document.body.appendChild(sparkle);
+                    
+                    setTimeout(() => {
+                        sparkle.remove();
+                    }, 1000);
+                }, i * 100);
+            }
+        }
+
+        // Add sparkle animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes sparkle {
+                0% {
+                    transform: scale(0) rotate(0deg);
+                    opacity: 1;
+                }
+                50% {
+                    transform: scale(1) rotate(180deg);
+                    opacity: 1;
+                }
+                100% {
+                    transform: scale(0) rotate(360deg);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Form submission handling
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Add a success animation
+            const button = document.querySelector('.login-btn');
+            const originalText = button.innerHTML;
+            
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Signing In...';
+            button.disabled = true;
+            
+            setTimeout(() => {
+                button.innerHTML = '<i class="fas fa-check mr-2"></i>Success!';
+                button.style.background = 'linear-gradient(135deg, #48bb78, #68d391)';
+                
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                    button.style.background = 'linear-gradient(135deg, #ffd700, #ffed4a)';
+                }, 2000);
+            }, 1500);
+        });
+
+
+    </script>
+</body>
+</html>
