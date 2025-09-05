@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji Whack-a-Mole Game 🐹🔨</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One:wght@400&family=Poppins:wght@300;400;600&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .game-title {
+            font-family: 'Fredoka One', cursive;
+            background: linear-gradient(45deg, #ff6b6b, #feca57, #48cae4, #ff9ff3);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 3s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .hole {
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #8B4513 0%, #A0522D 50%, #654321 100%);
+            border-radius: 50%;
+            position: relative;
+            box-shadow: inset 0 4px 8px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .hole:hover {
+            transform: scale(1.05);
+            box-shadow: inset 0 4px 8px rgba(0,0,0,0.4), 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .emoji {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 10;
+        }
+
+        .emoji.show {
+            transform: translate(-50%, -50%) scale(1);
+            animation: bounce 0.6s ease-in-out;
+        }
+
+        .emoji.hide {
+            transform: translate(-50%, -50%) scale(0);
+            animation: shrink 0.3s ease-in-out;
+        }
+
+        .emoji.hit {
+            animation: hit 0.4s ease-in-out;
+        }
+
+        @keyframes bounce {
+            0% { transform: translate(-50%, -50%) scale(0) rotate(0deg); }
+            50% { transform: translate(-50%, -50%) scale(1.2) rotate(10deg); }
+            100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+        }
+
+        @keyframes shrink {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            100% { transform: translate(-50%, -50%) scale(0); }
+        }
+
+        @keyframes hit {
+            0% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+            25% { transform: translate(-50%, -50%) scale(1.3) rotate(15deg); }
+            50% { transform: translate(-50%, -50%) scale(0.8) rotate(-10deg); }
+            75% { transform: translate(-50%, -50%) scale(1.1) rotate(5deg); }
+            100% { transform: translate(-50%, -50%) scale(0) rotate(0deg); }
+        }
+
+        .score-pop {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #feca57;
+            font-weight: bold;
+            font-size: 1.2rem;
+            pointer-events: none;
+            animation: scoreFloat 1s ease-out forwards;
+        }
+
+        @keyframes scoreFloat {
+            0% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-30px);
+            }
+        }
+
+        .game-board {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .timer-bar {
+            background: linear-gradient(90deg, #ff6b6b, #feca57, #48cae4);
+            height: 8px;
+            border-radius: 4px;
+            transition: width 0.1s linear;
+        }
+
+        .game-over-modal {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-4xl">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="game-title text-6xl mb-4">Whack-a-Mole 🐹🔨</h1>
+            <p class="text-white text-lg opacity-80">Click the emojis as fast as you can!</p>
+        </div>
+
+        <!-- Game Info -->
+        <div class="flex justify-center space-x-6 mb-6">
+            <div class="info-card p-4 text-center">
+                <div class="text-white text-sm opacity-80 mb-1">Score</div>
+                <div id="score" class="text-3xl font-bold text-yellow-400">0</div>
+            </div>
+            <div class="info-card p-4 text-center">
+                <div class="text-white text-sm opacity-80 mb-1">Time</div>
+                <div id="time" class="text-3xl font-bold text-green-400">30</div>
+            </div>
+            <div class="info-card p-4 text-center">
+                <div class="text-white text-sm opacity-80 mb-1">High Score</div>
+                <div id="highScore" class="text-3xl font-bold text-purple-400">0</div>
+            </div>
+        </div>
+
+        <!-- Timer Bar -->
+        <div class="w-full bg-gray-800 rounded-full h-3 mb-6 overflow-hidden">
+            <div id="timerBar" class="timer-bar w-full h-full"></div>
+        </div>
+
+        <!-- Game Board -->
+        <div class="game-board p-8 mb-6">
+            <div class="grid grid-cols-4 gap-6 justify-items-center" id="gameBoard">
+                <!-- Holes will be generated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Control Button -->
+        <div class="text-center">
+            <button id="startBtn" class="btn-primary text-white font-bold py-4 px-8 rounded-full text-xl">
+                <i class="fas fa-play mr-2"></i>Start Game
+            </button>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="gameOverModal" class="fixed inset-0 game-over-modal flex items-center justify-center hidden z-50">
+        <div class="modal-content p-8 text-center text-white max-w-md mx-4">
+            <div class="text-6xl mb-4">🎉</div>
+            <h2 class="text-3xl font-bold mb-4">Game Over!</h2>
+            <div class="text-xl mb-2">Final Score: <span id="finalScore" class="text-yellow-400 font-bold">0</span></div>
+            <div class="text-lg mb-6">High Score: <span id="finalHighScore" class="text-purple-400 font-bold">0</span></div>
+            <button id="restartBtn" class="btn-primary text-white font-bold py-3 px-6 rounded-full">
+                <i class="fas fa-redo mr-2"></i>Play Again
+            </button>
+        </div>
+    </div>
+
+    <script>
+        class WhackAMoleGame {
+            constructor() {
+                this.score = 0;
+                this.timeLeft = 30;
+                this.gameActive = false;
+                this.holes = [];
+                this.gameTimer = null;
+                this.spawnTimer = null;
+                this.emojis = ['🐹', '🐭', '🐰', '🐿️', '🦔', '🐌'];
+                this.highScore = localStorage.getItem('whackMoleHighScore') || 0;
+                
+                this.init();
+            }
+
+            init() {
+                this.createBoard();
+                this.updateDisplay();
+                this.bindEvents();
+            }
+
+            createBoard() {
+                const gameBoard = document.getElementById('gameBoard');
+                gameBoard.innerHTML = '';
+                
+                for (let i = 0; i < 12; i++) {
+                    const hole = document.createElement('div');
+                    hole.className = 'hole relative';
+                    hole.dataset.index = i;
+                    
+                    const emoji = document.createElement('div');
+                    emoji.className = 'emoji';
+                    emoji.dataset.index = i;
+                    
+                    hole.appendChild(emoji);
+                    gameBoard.appendChild(hole);
+                    this.holes.push({ element: hole, emoji: emoji, active: false });
+                }
+            }
+
+            bindEvents() {
+                document.getElementById('startBtn').addEventListener('click', () => this.startGame());
+                document.getElementById('restartBtn').addEventListener('click', () => this.restartGame());
+                
+                this.holes.forEach((hole, index) => {
+                    hole.emoji.addEventListener('click', (e) => this.whackEmoji(e, index));
+                });
+            }
+
+            startGame() {
+                this.gameActive = true;
+                this.score = 0;
+                this.timeLeft = 30;
+                
+                document.getElementById('startBtn').innerHTML = '<i class="fas fa-pause mr-2"></i>Game Running';
+                document.getElementById('startBtn').disabled = true;
+                
+                this.updateDisplay();
+                this.startTimer();
+                this.spawnEmojis();
+            }
+
+            startTimer() {
+                this.gameTimer = setInterval(() => {
+                    this.timeLeft--;
+                    this.updateDisplay();
+                    this.updateTimerBar();
+                    
+                    if (this.timeLeft <= 0) {
+                        this.endGame();
+                    }
+                }, 1000);
+            }
+
+            updateTimerBar() {
+                const percentage = (this.timeLeft / 30) * 100;
+                document.getElementById('timerBar').style.width = percentage + '%';
+            }
+
+            spawnEmojis() {
+                if (!this.gameActive) return;
+                
+                const randomHole = Math.floor(Math.random() * this.holes.length);
+                const hole = this.holes[randomHole];
+                
+                if (!hole.active) {
+                    this.showEmoji(hole, randomHole);
+                }
+                
+                const nextSpawn = Math.random() * 1500 + 500; // 500-2000ms
+                this.spawnTimer = setTimeout(() => this.spawnEmojis(), nextSpawn);
+            }
+
+            showEmoji(hole, index) {
+                hole.active = true;
+                const randomEmoji = this.emojis[Math.floor(Math.random() * this.emojis.length)];
+                hole.emoji.textContent = randomEmoji;
+                hole.emoji.classList.add('show');
+                
+                // Auto-hide after some time
+                setTimeout(() => {
+                    if (hole.active && this.gameActive) {
+                        this.hideEmoji(hole);
+                    }
+                }, Math.random() * 2000 + 1000); // 1-3 seconds
+            }
+
+            hideEmoji(hole) {
+                hole.emoji.classList.remove('show');
+                hole.emoji.classList.add('hide');
+                
+                setTimeout(() => {
+                    hole.active = false;
+                    hole.emoji.classList.remove('hide');
+                    hole.emoji.textContent = '';
+                }, 300);
+            }
+
+            whackEmoji(e, index) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                if (!this.gameActive) return;
+                
+                const hole = this.holes[index];
+                if (!hole.active) return;
+                
+                // Score points
+                this.score += 10;
+                this.showScorePopup(hole.element);
+                
+                // Hit animation
+                hole.emoji.classList.add('hit');
+                hole.active = false;
+                
+                // Visual feedback
+                hole.element.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    hole.element.style.transform = 'scale(1)';
+                }, 100);
+                
+                setTimeout(() => {
+                    hole.emoji.classList.remove('hit', 'show');
+                    hole.emoji.textContent = '';
+                }, 400);
+                
+                this.updateDisplay();
+            }
+
+            showScorePopup(holeElement) {
+                const popup = document.createElement('div');
+                popup.className = 'score-pop';
+                popup.textContent = '+10';
+                holeElement.appendChild(popup);
+                
+                setTimeout(() => {
+                    popup.remove();
+                }, 1000);
+            }
+
+            endGame() {
+                this.gameActive = false;
+                clearInterval(this.gameTimer);
+                clearTimeout(this.spawnTimer);
+                
+                // Hide all emojis
+                this.holes.forEach(hole => {
+                    if (hole.active) {
+                        this.hideEmoji(hole);
+                    }
+                });
+                
+                // Update high score
+                if (this.score > this.highScore) {
+                    this.highScore = this.score;
+                    localStorage.setItem('whackMoleHighScore', this.highScore);
+                }
+                
+                // Show game over modal
+                setTimeout(() => {
+                    document.getElementById('finalScore').textContent = this.score;
+                    document.getElementById('finalHighScore').textContent = this.highScore;
+                    document.getElementById('gameOverModal').classList.remove('hidden');
+                }, 500);
+                
+                // Reset button
+                document.getElementById('startBtn').innerHTML = '<i class="fas fa-play mr-2"></i>Start Game';
+                document.getElementById('startBtn').disabled = false;
+            }
+
+            restartGame() {
+                document.getElementById('gameOverModal').classList.add('hidden');
+                this.updateDisplay();
+                document.getElementById('timerBar').style.width = '100%';
+            }
+
+            updateDisplay() {
+                document.getElementById('score').textContent = this.score;
+                document.getElementById('time').textContent = this.timeLeft;
+                document.getElementById('highScore').textContent = this.highScore;
+            }
+        }
+
+        // Initialize game when page loads
+        window.addEventListener('load', () => {
+            new WhackAMoleGame();
+        });
+
+        // Add some visual flair
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add pulse animation to start button
+            const startBtn = document.getElementById('startBtn');
+            startBtn.classList.add('pulse');
+            
+            // Remove pulse when hovered
+            startBtn.addEventListener('mouseenter', function() {
+                this.classList.remove('pulse');
+            });
+            
+            startBtn.addEventListener('mouseleave', function() {
+                if (!this.disabled) {
+                    this.classList.add('pulse');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
