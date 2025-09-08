@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Emoji Mood Detector - Fun Interactive Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <!-- Header -->
+        <header class="game-header">
+            <h1 class="game-title">
+                <i class="fas fa-smile"></i>
+                Face Emoji Mood Detector
+            </h1>
+            <p class="game-subtitle">Change the mood and watch the emoji react!</p>
+        </header>
+
+        <!-- Main Game Area -->
+        <div class="game-area">
+            <!-- Emoji Display -->
+            <div class="emoji-container">
+                <div class="emoji-display" id="emojiDisplay">
+                    <div class="emoji-face" id="emojiFace">😊</div>
+                    <div class="mood-label" id="moodLabel">Happy</div>
+                </div>
+                <div class="emoji-glow" id="emojiGlow"></div>
+            </div>
+
+            <!-- Control Panel -->
+            <div class="control-panel">
+                <!-- Emotion Buttons -->
+                <div class="controls-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-palette"></i>
+                        Choose Emotion
+                    </h3>
+                    <div class="emotion-buttons">
+                        <button class="emoji-btn active" data-mood="happy" data-emoji="😊">
+                            <span class="btn-emoji">😊</span>
+                            <span class="btn-label">Happy</span>
+                        </button>
+                        <button class="emoji-btn" data-mood="sad" data-emoji="😢">
+                            <span class="btn-emoji">😢</span>
+                            <span class="btn-label">Sad</span>
+                        </button>
+                        <button class="emoji-btn" data-mood="angry" data-emoji="😡">
+                            <span class="btn-emoji">😡</span>
+                            <span class="btn-label">Angry</span>
+                        </button>
+                        <button class="emoji-btn" data-mood="excited" data-emoji="🤩">
+                            <span class="btn-emoji">🤩</span>
+                            <span class="btn-label">Excited</span>
+                        </button>
+                        <button class="emoji-btn" data-mood="cool" data-emoji="😎">
+                            <span class="btn-emoji">😎</span>
+                            <span class="btn-label">Cool</span>
+                        </button>
+                        <button class="emoji-btn" data-mood="surprised" data-emoji="😲">
+                            <span class="btn-emoji">😲</span>
+                            <span class="btn-label">Surprised</span>
+                        </button>
+                        <button class="emoji-btn" data-mood="love" data-emoji="😍">
+                            <span class="btn-emoji">😍</span>
+                            <span class="btn-label">Love</span>
+                        </button>
+                        <button class="emoji-btn" data-mood="tired" data-emoji="😴">
+                            <span class="btn-emoji">😴</span>
+                            <span class="btn-label">Tired</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Intensity Sliders -->
+                <div class="controls-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-sliders-h"></i>
+                        Adjust Intensity
+                    </h3>
+                    <div class="sliders-container">
+                        <div class="slider-group">
+                            <label for="intensitySlider">
+                                <i class="fas fa-fire"></i>
+                                Emotion Intensity
+                            </label>
+                            <input type="range" id="intensitySlider" class="slider" min="1" max="10" value="5">
+                            <div class="slider-value" id="intensityValue">5</div>
+                        </div>
+                        
+                        <div class="slider-group">
+                            <label for="sizeSlider">
+                                <i class="fas fa-expand-arrows-alt"></i>
+                                Emoji Size
+                            </label>
+                            <input type="range" id="sizeSlider" class="slider" min="50" max="150" value="100">
+                            <div class="slider-value" id="sizeValue">100%</div>
+                        </div>
+
+                        <div class="slider-group">
+                            <label for="speedSlider">
+                                <i class="fas fa-tachometer-alt"></i>
+                                Animation Speed
+                            </label>
+                            <input type="range" id="speedSlider" class="slider" min="1" max="10" value="5">
+                            <div class="slider-value" id="speedValue">5</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Special Effects -->
+                <div class="controls-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-magic"></i>
+                        Special Effects
+                    </h3>
+                    <div class="effects-buttons">
+                        <button class="effect-btn" id="glowEffect">
+                            <i class="fas fa-sun"></i>
+                            Glow
+                        </button>
+                        <button class="effect-btn" id="shakeEffect">
+                            <i class="fas fa-hand-rock"></i>
+                            Shake
+                        </button>
+                        <button class="effect-btn" id="bounceEffect">
+                            <i class="fas fa-arrow-up"></i>
+                            Bounce
+                        </button>
+                        <button class="effect-btn" id="randomMood">
+                            <i class="fas fa-random"></i>
+                            Random
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Panel -->
+        <div class="stats-panel">
+            <div class="stat-item">
+                <span class="stat-label">Current Mood:</span>
+                <span class="stat-value" id="currentMoodStat">Happy</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Mood Changes:</span>
+                <span class="stat-value" id="moodChangesStat">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Most Used:</span>
+                <span class="stat-value" id="mostUsedStat">😊</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Background particles -->
+    <div class="particles" id="particles"></div>
+
+    <script src="main.js"></script>
+</body>
+</html>
