@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Clock ⏰ - Day/Night Mode</title>
+    <link rel="stylesheet" href="Digital clock.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+</head>
+<body class="day-mode">
+    <div class="background-animation">
+        <!-- Animated background elements -->
+        <div class="floating-circle circle-1"></div>
+        <div class="floating-circle circle-2"></div>
+        <div class="floating-circle circle-3"></div>
+        <div class="floating-circle circle-4"></div>
+        <div class="stars-container">
+            <div class="star star-1"></div>
+            <div class="star star-2"></div>
+            <div class="star star-3"></div>
+            <div class="star star-4"></div>
+            <div class="star star-5"></div>
+            <div class="star star-6"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Mode Toggle -->
+        <div class="mode-toggle">
+            <button class="toggle-btn" id="modeToggle">
+                <i class="fas fa-sun sun-icon"></i>
+                <i class="fas fa-moon moon-icon"></i>
+                <div class="toggle-slider"></div>
+            </button>
+            <span class="mode-label">Auto Mode</span>
+            <label class="switch">
+                <input type="checkbox" id="autoModeToggle" checked>
+                <span class="slider round"></span>
+            </label>
+        </div>
+
+        <!-- Digital Clock -->
+        <div class="clock-container">
+            <div class="clock-wrapper">
+                <div class="time-display">
+                    <div class="time-section">
+                        <span class="time-number" id="hours">00</span>
+                        <span class="time-label">Hours</span>
+                    </div>
+                    <div class="separator">:</div>
+                    <div class="time-section">
+                        <span class="time-number" id="minutes">00</span>
+                        <span class="time-label">Minutes</span>
+                    </div>
+                    <div class="separator">:</div>
+                    <div class="time-section">
+                        <span class="time-number" id="seconds">00</span>
+                        <span class="time-label">Seconds</span>
+                    </div>
+                </div>
+                
+                <div class="period-display">
+                    <span id="period">AM</span>
+                </div>
+                
+                <div class="date-display">
+                    <div class="date-info">
+                        <span class="day-name" id="dayName">Monday</span>
+                        <span class="date-number" id="date">1</span>
+                        <span class="month-year" id="monthYear">January 2024</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Clock Glow Effect -->
+            <div class="clock-glow"></div>
+        </div>
+
+        <!-- Status Indicator -->
+        <div class="status-indicator">
+            <div class="mode-status">
+                <i class="fas fa-circle status-dot"></i>
+                <span class="status-text" id="statusText">Day Mode Active</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="Digital clock.js"></script>
+</body>
+</html>
